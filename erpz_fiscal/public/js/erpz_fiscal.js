@@ -13,97 +13,88 @@ $(document).on("toolbar_setup", function() {
     } catch(e) {}
 });
 
-function hook_point_of_sale_nfce() {
-    if (!window.cur_pos || !window.cur_pos.order_summary) {
-        return;
-    }
-
-    if (window.cur_pos._erpz_fiscal_hooked) return;
-    window.cur_pos._erpz_fiscal_hooked = true;
-
-    // 1. Botão no topo do PDV: "Imprimir Último Cupom NFC-e"
-    if (window.cur_pos.page) {
-        window.cur_pos.page.add_inner_button(__('Imprimir Último Cupom NFC-e'), function() {
-            frappe.db.get_list('POS Invoice', {
-                filters: { docstatus: 1, status_fiscal: 'Autorizada' },
-                order_by: 'creation desc',
-                limit: 1,
-                fields: ['name', 'numero_nfe']
-            }).then(records => {
-                if (records && records.length > 0) {
-                    window.open('/api/method/erpz_fiscal.api.nfe.imprimir_danfe?pos_invoice=' + encodeURIComponent(records[0].name));
-                } else {
-                    frappe.msgprint(__('Nenhum cupom NFC-e autorizado encontrado recentemente.'));
-                }
-            });
-        });
-    }
-
-    // 2. Injeta botão no resumo da venda (PastOrderSummary) e abre diálogo automático
-    const summary = window.cur_pos.order_summary;
-    const orig_load = summary.load_summary_of;
-    summary.load_summary_of = function(doc, after_submission = false) {
-        orig_load.call(this, doc, after_submission);
-        const self = this;
-
-        setTimeout(() => {
-            if (!self.$summary_btns) return;
-
-            self.$summary_btns.find(".nfce-btn").remove();
-
-            const btn = $(`
-                <button class="btn btn-primary nfce-btn mr-2" style="background-color: #16a34a !important; border-color: #15803d !important; color: #ffffff !important; font-weight: bold; font-size: 13px; padding: 6px 14px; cursor: pointer;">
-                    <i class="octicon octicon-file-text mr-1"></i> Imprimir Cupom NFC-e (80mm)
-                </button>
-            `);
-
-            btn.on("click", function() {
-                const inv = self.doc || doc;
-                if (inv && inv.name) {
-                    window.open('/api/method/erpz_fiscal.api.nfe.imprimir_danfe?pos_invoice=' + encodeURIComponent(inv.name));
-                }
-            });
-
-            self.$summary_btns.prepend(btn);
-
-            if (after_submission) {
-                let d = new frappe.ui.Dialog({
-                    title: __('Venda Finalizada - NFC-e Gerada!'),
-                    indicator: 'green',
-                    fields: [
-                        {
-                            fieldtype: 'HTML',
-                            fieldname: 'html_desc',
-                            options: `
-                                <div style="text-align: center; padding: 15px;">
-                                    <div style="font-size: 38px; color: #16a34a; margin-bottom: 10px;">
-                                        <i class="octicon octicon-check-circle"></i>
-                                    </div>
-                                    <h4 style="color: #1e293b; font-weight: bold; margin-bottom: 6px;">NFC-e Autorizada com Sucesso!</h4>
-                                    <p class="text-muted" style="font-size: 13px; margin-bottom: 12px;">Venda: <b>${doc.name}</b></p>
-                                    <p style="font-size: 12px; color: #64748b;">Clique abaixo para imprimir o Cupom Fiscal Térmico de 80mm com QR Code oficial da SEFAZ.</p>
-                                </div>
-                            `
-                        }
-                    ],
-                    primary_action_label: __('Imprimir Cupom NFC-e (80mm)'),
-                    primary_action: function() {
-                        d.hide();
-                        window.open('/api/method/erpz_fiscal.api.nfe.imprimir_danfe?pos_invoice=' + encodeURIComponent(doc.name));
-                    },
-                    secondary_action_label: __('Nova Venda (Fechar)'),
-                    secondary_action: function() {
-                        d.hide();
-                    }
-                });
-                d.show();
-            }
-        }, 200);
-    };
+function print_last_nfce_cupom() {
+    frappe.db.get_list('POS Invoice', {
+        filters: { docstatus: 1 },
+        order_by: 'creation desc',
+        limit: 1,
+        fields: ['name', 'numero_nfe', 'status_fiscal']
+    }).then(records => {
+        if (records && records.length > 0) {
+            window.open('/api/method/erpz_fiscal.api.nfe.imprimir_danfe?pos_invoice=' + encodeURIComponent(records[0].name));
+        } else {
+            frappe.msgprint(__('Nenhuma venda encontrada no PDV.'));
+        }
+    });
 }
 
-setInterval(() => {
-    if (window.frappe && frappe.get_route_str && frappe.get_route_str() === "point-of-sale") {
-        hook_point_of_sale_nfce();
+function ensure_nfce_pos_buttons() {
+    if (!window.frappe || !frappe.get_route_str) return;
+    if (frappe.get_route_str() !== "point-of-sale") return;
+
+    // 1. Injeta o botão verde diretamente antes do botão "Recent Orders"
+    const $recent_btn = $('button:contains("Recent Orders"), button:contains("Pedidos Recentes")');
+    if ($recent_btn.length > 0 && $(".btn-nfce-top-bar").length === 0) {
+        const $btn = $(`
+            <button class="btn btn-default btn-sm btn-nfce-top-bar mr-2" style="background-color: #16a34a !important; color: #ffffff !important; border-color: #15803d !important; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center;">
+                <i class="octicon octicon-file-text mr-1"></i> Imprimir Cupom NFC-e (80mm)
+            </button>
+        `);
+        $btn.on("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            print_last_nfce_cupom();
+        });
+        $recent_btn.before($btn);
     }
-}, 500);
+
+    // 2. Injeta botão no resumo da venda (quando aberto na lateral ou em Recent Orders)
+    const $summary_btns = $(".past-order-summary .summary-btns");
+    if ($summary_btns.length > 0 && $summary_btns.is(":visible") && $summary_btns.find(".btn-nfce-summary").length === 0) {
+        const $btn_sum = $(`
+            <div class="summary-btn btn btn-primary btn-nfce-summary mr-2" style="background-color: #16a34a !important; border-color: #15803d !important; color: #ffffff !important; font-weight: bold; cursor: pointer;">
+                <i class="octicon octicon-file-text mr-1"></i> Imprimir Cupom NFC-e (80mm)
+            </div>
+        `);
+        $btn_sum.on("click", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            let inv_name = null;
+            if (window.cur_pos && cur_pos.order_summary && cur_pos.order_summary.doc) {
+                inv_name = cur_pos.order_summary.doc.name;
+            } else {
+                inv_name = $(".past-order-summary .invoice-name").text().trim();
+            }
+            if (inv_name) {
+                window.open('/api/method/erpz_fiscal.api.nfe.imprimir_danfe?pos_invoice=' + encodeURIComponent(inv_name));
+            } else {
+                print_last_nfce_cupom();
+            }
+        });
+        $summary_btns.prepend($btn_sum);
+    }
+
+    // 3. Adiciona item no menu (...) caso não exista
+    const $menu = $(".page-actions .menu-btn-group .dropdown-menu");
+    if ($menu.length > 0 && $menu.find(".menu-nfce-print").length === 0) {
+        const $item = $(`
+            <li>
+                <a class="dropdown-item menu-nfce-print" href="#" style="font-weight: 600; color: #16a34a;">
+                    <i class="octicon octicon-file-text mr-2"></i> Imprimir Último Cupom NFC-e
+                </a>
+            </li>
+        `);
+        $item.on("click", function(e) {
+            e.preventDefault();
+            print_last_nfce_cupom();
+        });
+        $menu.prepend($item);
+    }
+}
+
+// Observador contínuo na tela do PDV a cada 300ms
+setInterval(ensure_nfce_pos_buttons, 300);
+
+$(document).on("page-change", function() {
+    setTimeout(ensure_nfce_pos_buttons, 200);
+});
