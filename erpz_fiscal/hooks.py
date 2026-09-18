@@ -12,6 +12,11 @@ required_apps = ["frappe", "erpnext"]
 after_install = "erpz_fiscal.setup.after_install"
 after_migrate = "erpz_fiscal.setup.after_migrate"
 
+# Page JS Hooks
+page_js = {
+    "point-of-sale": "public/js/pos_nfce.js"
+}
+
 # Client Scripts dos DocTypes
 doctype_js = {
     "Sales Order": "public/js/sales_order.js",
