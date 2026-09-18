@@ -1,0 +1,96 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:CERT-{empresa}-{YYYY}",
+    "creation": "2026-09-16 12:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "empresa",
+        "arquivo_pfx",
+        "senha_certificado",
+        "column_break_cert",
+        "status",
+        "validade_inicio",
+        "validade_fim",
+        "cnpj_certificado"
+    ],
+    "fields": [
+        {
+            "fieldname": "empresa",
+            "fieldtype": "Link",
+            "label": "Empresa",
+            "options": "Company",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "arquivo_pfx",
+            "fieldtype": "Attach",
+            "label": "Arquivo do Certificado (.pfx / .p12)",
+            "reqd": 1
+        },
+        {
+            "fieldname": "senha_certificado",
+            "fieldtype": "Password",
+            "label": "Senha do Certificado",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_cert",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Ativo\nExpirado\nInválido",
+            "default": "Ativo",
+            "read_only": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "validade_inicio",
+            "fieldtype": "Datetime",
+            "label": "Válido De",
+            "read_only": 1
+        },
+        {
+            "fieldname": "validade_fim",
+            "fieldtype": "Datetime",
+            "label": "Válido Até",
+            "read_only": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "cnpj_certificado",
+            "fieldtype": "Data",
+            "label": "CNPJ do Certificado",
+            "read_only": 1
+        }
+    ],
+    "modified": "2026-09-16 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "ERPZ Fiscal",
+    "name": "Certificado Digital",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Fiscal Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        }
+    ],
+    "track_changes": 1
+}

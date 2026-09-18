@@ -1,0 +1,261 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "creation": "2026-09-16 12:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "item_code",
+        "descricao",
+        "ncm",
+        "cfop",
+        "unidade",
+        "quantidade",
+        "valor_unitario",
+        "valor_total",
+        "cst_icms",
+        "base_icms",
+        "alíquota_icms",
+        "valor_icms",
+        "cst_pis",
+        "alíquota_pis",
+        "valor_pis",
+        "cst_cofins",
+        "alíquota_cofins",
+        "valor_cofins",
+        "mva_st",
+        "base_st",
+        "aliquota_st",
+        "valor_icms_st",
+        "cst_ipi",
+        "aliquota_ipi",
+        "valor_ipi",
+        "cst_ibs",
+        "base_ibs",
+        "aliquota_ibs",
+        "valor_ibs",
+        "cst_cbs",
+        "base_cbs",
+        "aliquota_cbs",
+        "valor_cbs"
+    ],
+    "fields": [
+        {
+            "fieldname": "item_code",
+            "fieldtype": "Link",
+            "label": "Item",
+            "options": "Item",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "descricao",
+            "fieldtype": "Data",
+            "label": "Descrição",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "ncm",
+            "fieldtype": "Data",
+            "label": "NCM",
+            "default": "00000000",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "cfop",
+            "fieldtype": "Data",
+            "label": "CFOP",
+            "default": "5102",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "unidade",
+            "fieldtype": "Data",
+            "label": "UN",
+            "default": "UN",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "quantidade",
+            "fieldtype": "Float",
+            "label": "Qtd",
+            "default": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "valor_unitario",
+            "fieldtype": "Currency",
+            "label": "Vl Unit",
+            "default": 0,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "valor_total",
+            "fieldtype": "Currency",
+            "label": "Vl Total",
+            "default": 0,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "cst_icms",
+            "fieldtype": "Data",
+            "label": "CST ICMS",
+            "default": "102"
+        },
+        {
+            "fieldname": "base_icms",
+            "fieldtype": "Currency",
+            "label": "Base ICMS",
+            "default": 0
+        },
+        {
+            "fieldname": "alíquota_icms",
+            "fieldtype": "Float",
+            "label": "Aliq ICMS (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_icms",
+            "fieldtype": "Currency",
+            "label": "Valor ICMS",
+            "default": 0
+        },
+        {
+            "fieldname": "cst_pis",
+            "fieldtype": "Data",
+            "label": "CST PIS",
+            "default": "49"
+        },
+        {
+            "fieldname": "alíquota_pis",
+            "fieldtype": "Float",
+            "label": "Aliq PIS (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_pis",
+            "fieldtype": "Currency",
+            "label": "Valor PIS",
+            "default": 0
+        },
+        {
+            "fieldname": "cst_cofins",
+            "fieldtype": "Data",
+            "label": "CST COFINS",
+            "default": "49"
+        },
+        {
+            "fieldname": "alíquota_cofins",
+            "fieldtype": "Float",
+            "label": "Aliq COFINS (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_cofins",
+            "fieldtype": "Currency",
+            "label": "Valor COFINS",
+            "default": 0
+        },
+        {
+            "fieldname": "mva_st",
+            "fieldtype": "Float",
+            "label": "MVA ST (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "base_st",
+            "fieldtype": "Currency",
+            "label": "Base ST",
+            "default": 0
+        },
+        {
+            "fieldname": "aliquota_st",
+            "fieldtype": "Float",
+            "label": "Aliq ST (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_icms_st",
+            "fieldtype": "Currency",
+            "label": "Valor ICMS-ST",
+            "default": 0
+        },
+        {
+            "fieldname": "cst_ipi",
+            "fieldtype": "Data",
+            "label": "CST IPI",
+            "default": "53"
+        },
+        {
+            "fieldname": "aliquota_ipi",
+            "fieldtype": "Float",
+            "label": "Aliq IPI (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_ipi",
+            "fieldtype": "Currency",
+            "label": "Valor IPI",
+            "default": 0
+        },
+        {
+            "fieldname": "cst_ibs",
+            "fieldtype": "Data",
+            "label": "CST IBS",
+            "default": "01"
+        },
+        {
+            "fieldname": "base_ibs",
+            "fieldtype": "Currency",
+            "label": "Base IBS",
+            "default": 0
+        },
+        {
+            "fieldname": "aliquota_ibs",
+            "fieldtype": "Float",
+            "label": "Aliq IBS (%)",
+            "default": 17.7
+        },
+        {
+            "fieldname": "valor_ibs",
+            "fieldtype": "Currency",
+            "label": "Valor IBS",
+            "default": 0,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "cst_cbs",
+            "fieldtype": "Data",
+            "label": "CST CBS",
+            "default": "01"
+        },
+        {
+            "fieldname": "base_cbs",
+            "fieldtype": "Currency",
+            "label": "Base CBS",
+            "default": 0
+        },
+        {
+            "fieldname": "aliquota_cbs",
+            "fieldtype": "Float",
+            "label": "Aliq CBS (%)",
+            "default": 8.8
+        },
+        {
+            "fieldname": "valor_cbs",
+            "fieldtype": "Currency",
+            "label": "Valor CBS",
+            "default": 0,
+            "in_list_view": 1
+        }
+    ],
+    "istable": 1,
+    "modified": "2026-09-16 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "ERPZ Fiscal",
+    "name": "Item Documento Fiscal",
+    "owner": "Administrator",
+    "permissions": []
+}

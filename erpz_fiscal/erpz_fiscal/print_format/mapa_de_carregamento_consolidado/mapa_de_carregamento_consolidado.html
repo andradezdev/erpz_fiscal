@@ -1,0 +1,79 @@
+<div class="print-format mapa-consolidado">
+    <style>
+        .mapa-consolidado { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; font-size: 11px; color: #1f2937; line-height: 1.4; }
+        .header-box { border-bottom: 2px solid #1f2937; padding-bottom: 8px; margin-bottom: 12px; }
+        .company-title { font-size: 16px; font-weight: bold; text-transform: uppercase; }
+        .doc-title { font-size: 14px; font-weight: bold; color: #4b5563; }
+        .table-data { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .table-data th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 6px 8px; font-size: 10px; text-transform: uppercase; text-align: left; }
+        .table-data td { border: 1px solid #e5e7eb; padding: 6px 8px; font-size: 10px; }
+    </style>
+
+    <div class="header-box">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <div class="company-title">{{ doc.empresa }}</div>
+                <div class="doc-title">MAPA DE CARREGAMENTO CONSOLIDADO (CONFERÊNCIA DE BAÚ)</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 15px; font-weight: bold; color: #1e40af;">CARGA Nº {{ doc.name }}</div>
+                <div><b>Data:</b> {{ frappe.utils.format_date(doc.data_carga) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <table style="width: 100%; margin-bottom: 10px; font-size: 11px;">
+        <tr>
+            <td style="width: 33%;"><b>Veículo:</b> {{ doc.placa_veiculo or 'N/A' }}</td>
+            <td style="width: 33%;"><b>Motorista:</b> {{ doc.motorista_nome or 'N/A' }}</td>
+            <td style="width: 34%;"><b>Total Pedidos:</b> {{ doc.total_pedidos }} | <b>Volumes:</b> {{ doc.total_volumes }}</td>
+        </tr>
+    </table>
+
+    <table class="table-data">
+        <thead>
+            <tr>
+                <th style="width: 5%;">#</th>
+                <th style="width: 20%;">Código do Item</th>
+                <th style="width: 45%;">Descrição do Produto</th>
+                <th style="width: 10%; text-align: center;">UN</th>
+                <th style="width: 10%; text-align: center;">Qtd Total</th>
+                <th style="width: 10%; text-align: right;">Peso Total (kg)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set produtos = {} %}
+            {% for row in doc.itens %}
+                {% set so = frappe.get_doc("Sales Order", row.sales_order) %}
+                {% for item in so.items %}
+                    {% if item.item_code not in produtos %}
+                        {% set item_pb = frappe.db.get_value("Item", item.item_code, "peso_bruto") or 0 %}
+                        {% set _ = produtos.update({item.item_code: {'name': item.item_name, 'uom': item.uom, 'qty': item.qty, 'peso': (item.qty * item_pb)}}) %}
+                    {% else %}
+                        {% set current = produtos[item.item_code] %}
+                        {% set item_pb = frappe.db.get_value("Item", item.item_code, "peso_bruto") or 0 %}
+                        {% set _ = current.update({'qty': current.qty + item.qty, 'peso': current.peso + (item.qty * item_pb)}) %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+
+            {% for item_code, p in produtos.items() %}
+            <tr>
+                <td style="text-align: center;">{{ loop.index }}</td>
+                <td><b>{{ item_code }}</b></td>
+                <td>{{ p.name }}</td>
+                <td style="text-align: center;">{{ p.uom }}</td>
+                <td style="text-align: center; font-size: 11px;"><b>{{ p.qty }}</b></td>
+                <td style="text-align: right;">{{ p.peso | round(3) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr style="background: #f9fafb; font-weight: bold;">
+                <td colspan="4" style="text-align: right;">TOTAL GERAL DA CARGA:</td>
+                <td style="text-align: center;">{{ doc.total_volumes }} vol</td>
+                <td style="text-align: right;">{{ doc.total_peso_bruto | round(3) }} kg</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

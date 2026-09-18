@@ -1,0 +1,191 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "creation": "2026-09-16 12:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "empresa",
+        "cnpj",
+        "inscricao_estadual",
+        "inscricao_municipal",
+        "column_break_cfg",
+        "regime_tributario",
+        "modo_operacao",
+        "ambiente",
+        "serie_nfe",
+        "serie_nfce",
+        "csc_id",
+        "csc_código",
+        "section_nfse_cfg",
+        "provedor_nfse",
+        "codigo_tributacao_municipio",
+        "column_break_nfse_cfg",
+        "gateway_api_provedor",
+        "gateway_token",
+        "gateway_ambiente",
+        "provedor_direto_municipio"
+    ],
+    "fields": [
+        {
+            "fieldname": "empresa",
+            "fieldtype": "Link",
+            "label": "Empresa",
+            "options": "Company",
+            "reqd": 1,
+            "unique": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "cnpj",
+            "fieldtype": "Data",
+            "label": "CNPJ (apenas números)",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "inscricao_estadual",
+            "fieldtype": "Data",
+            "label": "Inscrição Estadual",
+            "reqd": 1
+        },
+        {
+            "fieldname": "inscricao_municipal",
+            "fieldtype": "Data",
+            "label": "Inscrição Municipal"
+        },
+        {
+            "fieldname": "column_break_cfg",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "regime_tributario",
+            "fieldtype": "Select",
+            "label": "Regime Tributário",
+            "options": "1 - Simples Nacional\n2 - Simples Nacional (excesso)\n3 - Regime Normal (Lucro Presumido/Real)",
+            "default": "1 - Simples Nacional",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "ambiente",
+            "fieldtype": "Select",
+            "label": "Ambiente SEFAZ",
+            "options": "1 - Produção\n2 - Homologação (Testes)",
+            "default": "2 - Homologação (Testes)",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "serie_nfe",
+            "fieldtype": "Int",
+            "label": "Série NF-e",
+            "default": 1,
+            "reqd": 1
+        },
+        {
+            "fieldname": "serie_nfce",
+            "fieldtype": "Int",
+            "label": "Série NFC-e",
+            "default": 1
+        },
+        {
+            "fieldname": "csc_id",
+            "fieldtype": "Data",
+            "label": "ID do CSC (NFC-e)",
+            "default": "000001"
+        },
+        {
+            "fieldname": "csc_código",
+            "fieldtype": "Password",
+            "label": "Código do CSC (NFC-e)"
+        },
+        {
+            "fieldname": "modo_operacao",
+            "fieldtype": "Select",
+            "label": "Modo de Operação SEFAZ",
+            "options": "2 - Demonstração / Sandbox (Simulação para Testes)\n1 - Produção / Homologação Real (Exige Certificado A1 ICP-Brasil)",
+            "default": "2 - Demonstração / Sandbox (Simulação para Testes)",
+            "in_list_view": 1,
+            "reqd": 1,
+            "description": "Selecione o modo real quando tiver o certificado A1 .pfx cadastrado para conectar aos Web Services da SEFAZ."
+        },
+        {
+            "fieldname": "section_nfse_cfg",
+            "fieldtype": "Section Break",
+            "label": "Configuração da NFS-e (Serviços Municipais)",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "provedor_nfse",
+            "fieldtype": "Select",
+            "label": "Modelo de Integração NFS-e",
+            "options": "1 - Gateway API Unificado (Focus NFe / Multi-Cidades)\n2 - Conexão Direta Web Service Municipal / Padrão Nacional\n3 - Modo Demonstração / Sandbox (Simulação para Testes)",
+            "default": "1 - Gateway API Unificado (Focus NFe / Multi-Cidades)",
+            "in_list_view": 1,
+            "description": "Selecione Gateway API para atender qualquer um dos 5.570 municípios via REST API, ou Conexão Direta para web services municipais."
+        },
+        {
+            "fieldname": "codigo_tributacao_municipio",
+            "fieldtype": "Data",
+            "label": "Código Tributação Municipal",
+            "description": "Código do serviço na prefeitura da empresa"
+        },
+        {
+            "fieldname": "column_break_nfse_cfg",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "gateway_api_provedor",
+            "fieldtype": "Select",
+            "label": "Provedor Gateway API",
+            "options": "Focus NFe\nPlugNotas (TecnoSpeed)\nNuvem Fiscal",
+            "default": "Focus NFe"
+        },
+        {
+            "fieldname": "gateway_token",
+            "fieldtype": "Password",
+            "label": "Token de Acesso da API (Gateway)",
+            "description": "Token fornecido pelo provedor (ex: FocusNFe / PlugNotas)"
+        },
+        {
+            "fieldname": "gateway_ambiente",
+            "fieldtype": "Select",
+            "label": "Ambiente do Gateway",
+            "options": "Homologação\nProdução",
+            "default": "Homologação"
+        },
+        {
+            "fieldname": "provedor_direto_municipio",
+            "fieldtype": "Select",
+            "label": "Padrão de Conexão Direta",
+            "options": "Padrão Nacional da NFS-e (Receita Federal)\nSão Paulo - SP (Nota Paulistana)\nABRASF Padrão 2.0 (Betha / Ginfes / WebISS / DSF)",
+            "default": "Padrão Nacional da NFS-e (Receita Federal)",
+            "description": "Utilizado quando selecionada a opção de Conexão Direta Municipal com Certificado A1."
+        }
+    ],
+    "modified": "2026-09-16 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "ERPZ Fiscal",
+    "name": "Configuracao Fiscal Empresa",
+    "naming_rule": "By fieldname",
+    "autoname": "field:empresa",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Fiscal Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        }
+    ]
+}

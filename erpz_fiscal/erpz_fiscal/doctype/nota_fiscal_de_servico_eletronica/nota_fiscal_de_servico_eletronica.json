@@ -1,0 +1,417 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "format:NFSE-{YYYY}-{#####}",
+    "creation": "2026-09-16 12:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "section_id",
+        "naming_series",
+        "empresa",
+        "numero_nfse",
+        "serie_nfse",
+        "column_break_id",
+        "status",
+        "data_emissao",
+        "codigo_verificacao",
+        "link_visualizacao_prefeitura",
+        "voucher_type",
+        "voucher_no",
+        "section_partes",
+        "prestador_cnpj",
+        "prestador_im",
+        "column_break_partes",
+        "cliente",
+        "cliente_nome",
+        "cliente_cpf_cnpj",
+        "cliente_im",
+        "cliente_email",
+        "cidade_prestacao",
+        "uf_prestacao",
+        "section_servico",
+        "codigo_servico_lc116",
+        "codigo_cnae",
+        "discriminacao_servicos",
+        "section_valores",
+        "valor_servicos",
+        "valor_deducoes",
+        "valor_desconto",
+        "column_break_valores",
+        "base_calculo_iss",
+        "aliquota_iss",
+        "valor_iss",
+        "iss_retido",
+        "section_retencoes",
+        "valor_pis",
+        "valor_cofins",
+        "valor_inss",
+        "column_break_retencoes",
+        "valor_irrf",
+        "valor_csll",
+        "total_retencoes",
+        "valor_liquido",
+        "section_reforma_nfse",
+        "aliquota_ibs",
+        "valor_ibs",
+        "column_break_reforma_nfse",
+        "aliquota_cbs",
+        "valor_cbs",
+        "section_xml",
+        "xml_gerado",
+        "mensagem_retorno"
+    ],
+    "fields": [
+        {
+            "fieldname": "section_id",
+            "fieldtype": "Section Break",
+            "label": "Identificação da NFS-e"
+        },
+        {
+            "default": "NFSE-.YYYY.-.#####",
+            "fieldname": "naming_series",
+            "fieldtype": "Select",
+            "hidden": 1,
+            "label": "Série",
+            "options": "NFSE-.YYYY.-.#####"
+        },
+        {
+            "fieldname": "empresa",
+            "fieldtype": "Link",
+            "label": "Empresa Prestadora",
+            "options": "Company",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "numero_nfse",
+            "fieldtype": "Int",
+            "label": "Número da NFS-e (Prefeitura)",
+            "read_only": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "serie_nfse",
+            "fieldtype": "Data",
+            "label": "Série",
+            "default": "1"
+        },
+        {
+            "fieldname": "column_break_id",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Rascunho\nTransmitida\nAutorizada\nCancelada\nRejeitada",
+            "default": "Rascunho",
+            "read_only": 1,
+            "in_list_view": 1,
+            "in_standard_filter": 1
+        },
+        {
+            "fieldname": "data_emissao",
+            "fieldtype": "Datetime",
+            "label": "Data / Hora de Emissão"
+        },
+        {
+            "fieldname": "codigo_verificacao",
+            "fieldtype": "Data",
+            "label": "Código de Verificação",
+            "read_only": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "link_visualizacao_prefeitura",
+            "fieldtype": "Data",
+            "label": "Link da Prefeitura",
+            "read_only": 1
+        },
+        {
+            "fieldname": "voucher_type",
+            "fieldtype": "Select",
+            "label": "Documento de Origem",
+            "options": "Sales Invoice\nManual",
+            "default": "Sales Invoice",
+            "hidden": 1
+        },
+        {
+            "fieldname": "voucher_no",
+            "fieldtype": "Dynamic Link",
+            "label": "Nº Documento Origem",
+            "options": "voucher_type"
+        },
+        {
+            "fieldname": "section_partes",
+            "fieldtype": "Section Break",
+            "label": "Prestador e Tomador do Serviço"
+        },
+        {
+            "fieldname": "prestador_cnpj",
+            "fieldtype": "Data",
+            "label": "CNPJ do Prestador",
+            "read_only": 1
+        },
+        {
+            "fieldname": "prestador_im",
+            "fieldtype": "Data",
+            "label": "Inscrição Municipal do Prestador"
+        },
+        {
+            "fieldname": "column_break_partes",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cliente",
+            "fieldtype": "Link",
+            "label": "Tomador (Cliente)",
+            "options": "Customer",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "cliente_nome",
+            "fieldtype": "Data",
+            "label": "Razão Social / Nome do Tomador"
+        },
+        {
+            "fieldname": "cliente_cpf_cnpj",
+            "fieldtype": "Data",
+            "label": "CPF / CNPJ do Tomador"
+        },
+        {
+            "fieldname": "cliente_im",
+            "fieldtype": "Data",
+            "label": "Inscrição Municipal do Tomador"
+        },
+        {
+            "fieldname": "cliente_email",
+            "fieldtype": "Data",
+            "label": "E-mail do Tomador"
+        },
+        {
+            "fieldname": "cidade_prestacao",
+            "fieldtype": "Data",
+            "label": "Município da Prestação",
+            "default": "São Paulo"
+        },
+        {
+            "fieldname": "uf_prestacao",
+            "fieldtype": "Data",
+            "label": "UF da Prestação",
+            "default": "SP"
+        },
+        {
+            "fieldname": "section_servico",
+            "fieldtype": "Section Break",
+            "label": "Serviço Prestado (LC 116/03)"
+        },
+        {
+            "fieldname": "codigo_servico_lc116",
+            "fieldtype": "Data",
+            "label": "Item LC 116/03",
+            "default": "01.07",
+            "reqd": 1,
+            "description": "Ex: 01.07 - Suporte Técnico e Consultoria em TI"
+        },
+        {
+            "fieldname": "codigo_cnae",
+            "fieldtype": "Data",
+            "label": "CNAE",
+            "default": "6202300"
+        },
+        {
+            "fieldname": "discriminacao_servicos",
+            "fieldtype": "Small Text",
+            "label": "Discriminação Detalhada dos Serviços",
+            "reqd": 1
+        },
+        {
+            "fieldname": "section_valores",
+            "fieldtype": "Section Break",
+            "label": "Valores dos Serviços e ISS"
+        },
+        {
+            "fieldname": "valor_servicos",
+            "fieldtype": "Currency",
+            "label": "Valor dos Serviços (R$)",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "valor_deducoes",
+            "fieldtype": "Currency",
+            "label": "Deduções Legais (R$)",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_desconto",
+            "fieldtype": "Currency",
+            "label": "Desconto Incondicionado (R$)",
+            "default": 0
+        },
+        {
+            "fieldname": "column_break_valores",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "base_calculo_iss",
+            "fieldtype": "Currency",
+            "label": "Base de Cálculo do ISS",
+            "read_only": 1
+        },
+        {
+            "fieldname": "aliquota_iss",
+            "fieldtype": "Float",
+            "label": "Alíquota do ISS (%)",
+            "default": 2.9
+        },
+        {
+            "fieldname": "valor_iss",
+            "fieldtype": "Currency",
+            "label": "Valor do ISS (R$)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "iss_retido",
+            "fieldtype": "Check",
+            "label": "ISS Retido pelo Tomador?"
+        },
+        {
+            "fieldname": "section_retencoes",
+            "fieldtype": "Section Break",
+            "label": "Retenções de Impostos Federais"
+        },
+        {
+            "fieldname": "valor_pis",
+            "fieldtype": "Currency",
+            "label": "PIS Retido (R$)",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_cofins",
+            "fieldtype": "Currency",
+            "label": "COFINS Retido (R$)",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_inss",
+            "fieldtype": "Currency",
+            "label": "INSS Retido (R$)",
+            "default": 0
+        },
+        {
+            "fieldname": "column_break_retencoes",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "valor_irrf",
+            "fieldtype": "Currency",
+            "label": "IRRF Retido (R$)",
+            "default": 0
+        },
+        {
+            "fieldname": "valor_csll",
+            "fieldtype": "Currency",
+            "label": "CSLL Retida (R$)",
+            "default": 0
+        },
+        {
+            "fieldname": "total_retencoes",
+            "fieldtype": "Currency",
+            "label": "Total Retenções Federais",
+            "read_only": 1
+        },
+        {
+            "fieldname": "valor_liquido",
+            "fieldtype": "Currency",
+            "label": "Valor Líquido da NFS-e",
+            "read_only": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "section_reforma_nfse",
+            "fieldtype": "Section Break",
+            "label": "Reforma Tributária (IBS e CBS sobre Serviços)"
+        },
+        {
+            "fieldname": "aliquota_ibs",
+            "fieldtype": "Float",
+            "label": "Alíquota IBS (%)",
+            "default": 17.7
+        },
+        {
+            "fieldname": "valor_ibs",
+            "fieldtype": "Currency",
+            "label": "Valor IBS (R$)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "column_break_reforma_nfse",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "aliquota_cbs",
+            "fieldtype": "Float",
+            "label": "Alíquota CBS (%)",
+            "default": 8.8
+        },
+        {
+            "fieldname": "valor_cbs",
+            "fieldtype": "Currency",
+            "label": "Valor CBS (R$)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "section_xml",
+            "fieldtype": "Section Break",
+            "label": "Retorno e XML",
+            "collapsible": 1
+        },
+        {
+            "fieldname": "xml_gerado",
+            "fieldtype": "Code",
+            "label": "XML / RPS da Prefeitura",
+            "options": "XML",
+            "read_only": 1
+        },
+        {
+            "fieldname": "mensagem_retorno",
+            "fieldtype": "Small Text",
+            "label": "Mensagem da Prefeitura / Provedor",
+            "read_only": 1
+        }
+    ],
+    "modified": "2026-09-16 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "ERPZ Fiscal",
+    "name": "Nota Fiscal de Servico Eletronica",
+    "naming_rule": "Expression",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Fiscal Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Fiscal User",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 0
+        }
+    ],
+    "track_changes": 1
+}

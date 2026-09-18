@@ -1,0 +1,235 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "field:nome_regra",
+    "creation": "2026-09-16 12:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "nome_regra",
+        "cfop",
+        "natureza_operacao",
+        "column_break_regra",
+        "cst_icms",
+        "aliquota_icms",
+        "reducao_base_icms",
+        "section_pis_cofins",
+        "cst_pis",
+        "aliquota_pis",
+        "column_break_pis",
+        "cst_cofins",
+        "aliquota_cofins",
+        "uf_origem",
+        "uf_destino",
+        "section_st",
+        "cst_icms_st",
+        "mva_st",
+        "aliquota_icms_st",
+        "section_ipi",
+        "cst_ipi",
+        "aliquota_ipi",
+        "section_reforma",
+        "cst_ibs",
+        "aliquota_ibs",
+        "column_break_reforma",
+        "cst_cbs",
+        "aliquota_cbs"
+    ],
+    "fields": [
+        {
+            "fieldname": "nome_regra",
+            "fieldtype": "Data",
+            "label": "Nome da Regra",
+            "reqd": 1,
+            "unique": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "cfop",
+            "fieldtype": "Data",
+            "label": "CFOP Padrão",
+            "default": "5102",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "natureza_operacao",
+            "fieldtype": "Data",
+            "label": "Natureza de Operação",
+            "default": "Venda de mercadoria",
+            "reqd": 1
+        },
+        {
+            "fieldname": "column_break_regra",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cst_icms",
+            "fieldtype": "Data",
+            "label": "CST / CSOSN ICMS",
+            "default": "102",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "aliquota_icms",
+            "fieldtype": "Float",
+            "label": "Alíquota ICMS (%)",
+            "default": 0,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "reducao_base_icms",
+            "fieldtype": "Float",
+            "label": "Redução Base ICMS (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "section_pis_cofins",
+            "fieldtype": "Section Break",
+            "label": "PIS / COFINS"
+        },
+        {
+            "fieldname": "cst_pis",
+            "fieldtype": "Data",
+            "label": "CST PIS",
+            "default": "49"
+        },
+        {
+            "fieldname": "aliquota_pis",
+            "fieldtype": "Float",
+            "label": "Alíquota PIS (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "column_break_pis",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cst_cofins",
+            "fieldtype": "Data",
+            "label": "CST COFINS",
+            "default": "49"
+        },
+        {
+            "fieldname": "aliquota_cofins",
+            "fieldtype": "Float",
+            "label": "Alíquota COFINS (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "uf_origem",
+            "fieldtype": "Data",
+            "label": "UF Origem",
+            "default": "SP",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "uf_destino",
+            "fieldtype": "Data",
+            "label": "UF Destino",
+            "default": "SP",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "section_st",
+            "fieldtype": "Section Break",
+            "label": "Substituição Tributária (ICMS-ST)"
+        },
+        {
+            "fieldname": "cst_icms_st",
+            "fieldtype": "Data",
+            "label": "CST ICMS-ST",
+            "default": "10"
+        },
+        {
+            "fieldname": "mva_st",
+            "fieldtype": "Float",
+            "label": "MVA ST (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "aliquota_icms_st",
+            "fieldtype": "Float",
+            "label": "Alíquota ICMS-ST (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "section_ipi",
+            "fieldtype": "Section Break",
+            "label": "IPI"
+        },
+        {
+            "fieldname": "cst_ipi",
+            "fieldtype": "Data",
+            "label": "CST IPI",
+            "default": "53"
+        },
+        {
+            "fieldname": "aliquota_ipi",
+            "fieldtype": "Float",
+            "label": "Alíquota IPI (%)",
+            "default": 0
+        },
+        {
+            "fieldname": "section_reforma",
+            "fieldtype": "Section Break",
+            "label": "Reforma Tributária (IBS e CBS)"
+        },
+        {
+            "fieldname": "cst_ibs",
+            "fieldtype": "Data",
+            "label": "CST IBS",
+            "default": "01"
+        },
+        {
+            "fieldname": "aliquota_ibs",
+            "fieldtype": "Float",
+            "label": "Alíquota IBS (%)",
+            "default": 17.7,
+            "description": "Imposto sobre Bens e Serviços (Estadual/Municipal)",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "column_break_reforma",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "cst_cbs",
+            "fieldtype": "Data",
+            "label": "CST CBS",
+            "default": "01"
+        },
+        {
+            "fieldname": "aliquota_cbs",
+            "fieldtype": "Float",
+            "label": "Alíquota CBS (%)",
+            "default": 8.8,
+            "description": "Contribuição sobre Bens e Serviços (Federal)",
+            "in_list_view": 1
+        }
+    ],
+    "modified": "2026-09-16 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "ERPZ Fiscal",
+    "name": "Regra de Tributacao",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Fiscal Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        }
+    ]
+}

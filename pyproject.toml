@@ -1,0 +1,25 @@
+[project]
+name = "erpz_fiscal"
+authors = [
+    { name = "ERPZ", email = "dev@erpz.io"}
+]
+description = "ERPZ Fiscal - Localização Fiscal Brasileira Oficial: Motor Tributário, NFe 4.0, NFCe, DANFE, SPED e Montagem de Carga"
+requires-python = ">=3.12"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    "nfelib>=2.5.0",
+    "erpbrasil.base>=2.4.0",
+    "erpbrasil.edoc>=3.1.0",
+    "brazilfiscalreport>=1.0.0",
+    "sped>=0.4.5",
+    "cryptography>=41.0.0",
+    "signxml>=5.1.0",
+    "reportlab>=4.0.0",
+    "qrcode>=8.0.0",
+    "python-barcode>=0.16.0"
+]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
