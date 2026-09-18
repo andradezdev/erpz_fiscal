@@ -311,14 +311,8 @@ def consultar_documento_sefaz(documento_fiscal):
 
 
 def pos_invoice_on_submit(doc, method=None):
-    """Gera automaticamente a NFC-e (Mod. 65) ao submeter uma venda no PDV"""
-    if not frappe.db.exists("Configuracao Fiscal Empresa", doc.company):
-        return
-
-    try:
-        emitir_nfce_pos_invoice(doc.name)
-    except Exception as e:
-        frappe.log_error(f"Erro ao emitir NFC-e automática para POS Invoice {doc.name}: {str(e)}")
+    """Hook de submissão do POS Invoice - a emissão de NFC-e é controlada pelo diálogo do caixa"""
+    pass
 
 
 @frappe.whitelist()
