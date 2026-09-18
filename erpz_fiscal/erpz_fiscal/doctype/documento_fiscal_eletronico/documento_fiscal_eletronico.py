@@ -511,6 +511,15 @@ class DocumentoFiscalEletronico(Document):
       </detPag>
     </pag>"""
 
+        cnpj_emit = "18594769000140"
+        ie_emit = "ISENTO"
+        x_nome_emit = self.get("empresa") or "Empresa"
+        x_fant_emit = "ERPZ"
+        if frappe.db.exists("Configuracao Fiscal Empresa", self.get("empresa")):
+            cfg = frappe.get_doc("Configuracao Fiscal Empresa", self.get("empresa"))
+            cnpj_emit = (cfg.cnpj or cnpj_emit).replace(".", "").replace("-", "").replace("/", "")[:14]
+            ie_emit = (cfg.inscricao_estadual or ie_emit).replace(".", "").replace("-", "").replace("/", "")
+
         return f"""<NFe xmlns="http://www.portalfiscal.inf.br/nfe">
   <infNFe versao="4.00" Id="NFe{chave}">
     <ide>
@@ -535,9 +544,9 @@ class DocumentoFiscalEletronico(Document):
       <verProc>ERPZ Fiscal 1.0</verProc>
     </ide>
     <emit>
-      <CNPJ>12345678000195</CNPJ>
-      <xNome>{self.get("empresa")}</xNome>
-      <xFant>ERPZ</xFant>
+      <CNPJ>{cnpj_emit}</CNPJ>
+      <xNome>{x_nome_emit}</xNome>
+      <xFant>{x_fant_emit}</xFant>
       <enderEmit>
         <xLgr>AVENIDA PAULISTA</xLgr>
         <nro>1500</nro>
@@ -550,7 +559,7 @@ class DocumentoFiscalEletronico(Document):
         <xPais>BRASIL</xPais>
         <fone>1130001234</fone>
       </enderEmit>
-      <IE>123456789112</IE>
+      <IE>{ie_emit}</IE>
       <CRT>3</CRT>
     </emit>
     {tag_dest}

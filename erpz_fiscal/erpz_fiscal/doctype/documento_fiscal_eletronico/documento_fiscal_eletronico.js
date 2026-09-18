@@ -1,5 +1,15 @@
 frappe.ui.form.on('Documento Fiscal Eletronico', {
     refresh: function(frm) {
+        if (!frm.is_new() && frm.doc.status === 'Rejeitado') {
+            let cod = frm.doc.codigo_status_sefaz || '';
+            let mot = frm.doc.motivo_rejeicao || frm.doc.mensagem_sefaz || __('Documento fiscal rejeitado pela SEFAZ');
+            frm.dashboard.set_headline(`
+                <div class="alert alert-danger mb-0 font-weight-bold" style="font-size: 13px;">
+                    <i class="octicon octicon-alert mr-1"></i> Rejeição da SEFAZ [cStat ${cod}]: ${mot}
+                </div>
+            `);
+            frm.dashboard.add_indicator(__('Rejeitado na SEFAZ ({0})', [cod]), 'red');
+        }
         if (!frm.is_new() && frm.doc.status === 'Autorizado') {
             let is_nfce = (frm.doc.modelo_fiscal || "").includes("65");
             let btn_label = is_nfce ? __('Imprimir Cupom NFC-e (80mm)') : __('Imprimir DANFE (PDF)');

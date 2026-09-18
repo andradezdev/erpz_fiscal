@@ -45,6 +45,8 @@
         "section_itens",
         "itens",
         "section_sefaz",
+        "codigo_status_sefaz",
+        "motivo_rejeicao",
         "chave_acesso",
         "protocolo",
         "data_autorizacao",
@@ -57,9 +59,7 @@
         "section_reforma_dfe",
         "valor_ibs",
         "column_break_reforma_dfe",
-        "valor_cbs",
-        "codigo_status_sefaz",
-        "motivo_rejeicao"
+        "valor_cbs"
     ],
     "fields": [
         {
