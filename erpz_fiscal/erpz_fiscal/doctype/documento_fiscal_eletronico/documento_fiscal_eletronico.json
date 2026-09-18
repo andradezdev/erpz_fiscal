@@ -115,7 +115,7 @@
             "fieldname": "voucher_type",
             "fieldtype": "Select",
             "label": "Documento de Origem",
-            "options": "Sales Invoice\nPurchase Invoice\nManual",
+            "options": "Sales Invoice\nPOS Invoice\nPurchase Invoice\nManual",
             "default": "Sales Invoice"
         },
         {

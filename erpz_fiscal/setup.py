@@ -185,6 +185,58 @@ def get_custom_fields():
                 "insert_after": "chave_nfe"
             }
         ],
+        "POS Invoice": [
+            {
+                "fieldname": "erpz_fiscal_nfe_section",
+                "label": "Nota Fiscal de Consumidor (NFC-e)",
+                "fieldtype": "Section Break",
+                "insert_after": "amended_from",
+                "collapsible": 1
+            },
+            {
+                "fieldname": "documento_fiscal",
+                "label": "Documento Fiscal Eletrônico",
+                "fieldtype": "Link",
+                "options": "Documento Fiscal Eletronico",
+                "read_only": 1,
+                "insert_after": "erpz_fiscal_nfe_section"
+            },
+            {
+                "fieldname": "chave_nfe",
+                "label": "Chave NFC-e",
+                "fieldtype": "Data",
+                "read_only": 1,
+                "insert_after": "documento_fiscal"
+            },
+            {
+                "fieldname": "status_fiscal",
+                "label": "Status Fiscal",
+                "fieldtype": "Select",
+                "options": "\nSem NF\nPendente\nAutorizada\nCancelada\nRejeitada",
+                "default": "Sem NF",
+                "read_only": 1,
+                "insert_after": "chave_nfe"
+            },
+            {
+                "fieldname": "column_break_fiscal_pos",
+                "fieldtype": "Column Break",
+                "insert_after": "status_fiscal"
+            },
+            {
+                "fieldname": "numero_nfe",
+                "label": "Número NFC-e",
+                "fieldtype": "Int",
+                "read_only": 1,
+                "insert_after": "column_break_fiscal_pos"
+            },
+            {
+                "fieldname": "serie_nfe",
+                "label": "Série NFC-e",
+                "fieldtype": "Int",
+                "read_only": 1,
+                "insert_after": "numero_nfe"
+            }
+        ],
         "Sales Invoice": [
             {
                 "fieldname": "erpz_fiscal_nfe_section",

@@ -122,10 +122,12 @@ def faturar_sales_order_individual(sales_order):
 
 
 @frappe.whitelist()
-def imprimir_danfe(documento_fiscal=None, sales_invoice=None, sales_order=None):
-    """Gera e faz o download direto do DANFE em PDF"""
+def imprimir_danfe(documento_fiscal=None, sales_invoice=None, sales_order=None, pos_invoice=None):
+    """Gera e faz o download direto do DANFE ou Cupom NFC-e em PDF"""
     if not documento_fiscal:
-        if sales_invoice:
+        if pos_invoice:
+            documento_fiscal = frappe.db.get_value("POS Invoice", pos_invoice, "documento_fiscal")
+        elif sales_invoice:
             documento_fiscal = frappe.db.get_value("Sales Invoice", sales_invoice, "documento_fiscal")
         elif sales_order:
             documento_fiscal = frappe.db.get_value("Sales Order", sales_order, "documento_fiscal")
@@ -305,4 +307,101 @@ def consultar_documento_sefaz(documento_fiscal):
             "cStat": "Erro",
             "xMotivo": str(e),
             "chave_acesso": dfe.chave_acesso
+        }
+
+
+def pos_invoice_on_submit(doc, method=None):
+    """Gera automaticamente a NFC-e (Mod. 65) ao submeter uma venda no PDV"""
+    if not frappe.db.exists("Configuracao Fiscal Empresa", doc.company):
+        return
+
+    try:
+        emitir_nfce_pos_invoice(doc.name)
+    except Exception as e:
+        frappe.log_error(f"Erro ao emitir NFC-e automática para POS Invoice {doc.name}: {str(e)}")
+
+
+@frappe.whitelist()
+def emitir_nfce_pos_invoice(pos_invoice):
+    """
+    Emite a NFC-e (Modelo 65) a partir de uma POS Invoice (Venda no PDV)
+    """
+    if not pos_invoice:
+        frappe.throw(_("Fatura do PDV não informada."))
+
+    inv = frappe.get_doc("POS Invoice", pos_invoice)
+
+    if inv.docstatus != 1:
+        frappe.throw(_("A Fatura do PDV precisa estar submetida para emitir a NFC-e."))
+
+    if inv.get("status_fiscal") == "Autorizada":
+        frappe.throw(_("Esta venda no PDV já possui NFC-e autorizada: Nº {0}").format(inv.numero_nfe))
+
+    # 1. Cria o Documento Fiscal Eletrônico Modelo 65 - NFC-e
+    dfe = frappe.new_doc("Documento Fiscal Eletronico")
+    dfe.modelo_fiscal = "65 - NFC-e"
+    dfe.empresa = inv.company
+    dfe.voucher_type = "POS Invoice"
+    dfe.voucher_no = inv.name
+    dfe.destinatario_tipo = "Customer"
+    dfe.destinatario = inv.customer
+    dfe.destinatario_nome = inv.customer_name or "Consumidor Final"
+    dfe.destinatario_cpf_cnpj = inv.get("tax_id") or ""
+    dfe.quantidade_volumes = 1
+    dfe.especie_volumes = "VOLUMES"
+    dfe.peso_liquido = 0.0
+    dfe.peso_bruto = 0.0
+
+    for item in inv.items:
+        item_doc = frappe.get_doc("Item", item.item_code)
+        dfe.append("itens", {
+            "item_code": item.item_code,
+            "descricao": item.item_name or item_doc.item_name,
+            "ncm": item_doc.get("ncm") or "00000000",
+            "cfop": "5102",
+            "unidade": item.uom or "UN",
+            "quantidade": item.qty,
+            "valor_unitario": item.rate,
+            "valor_total": item.amount,
+            "cst_icms": "102"
+        })
+
+    dfe.calcular_totais()
+    dfe.insert(ignore_permissions=True)
+
+    # 2. Transmite para a SEFAZ
+    try:
+        res = dfe.transmitir_sefaz()
+        inv.db_set("documento_fiscal", dfe.name)
+        inv.db_set("numero_nfe", dfe.numero_nota)
+        inv.db_set("serie_nfe", dfe.serie or 1)
+        inv.db_set("chave_nfe", dfe.chave_acesso)
+        inv.db_set("status_fiscal", "Autorizada" if dfe.status == "Autorizado" else "Rejeitada")
+        frappe.db.commit()
+
+        return {
+            "success": dfe.status == "Autorizado",
+            "pos_invoice": inv.name,
+            "documento_fiscal": dfe.name,
+            "numero_nfe": dfe.numero_nota,
+            "chave_nfe": dfe.chave_acesso,
+            "status": dfe.status,
+            "mensagem": dfe.mensagem_sefaz or dfe.motivo_rejeicao
+        }
+    except Exception as e:
+        inv.db_set("documento_fiscal", dfe.name)
+        inv.db_set("numero_nfe", dfe.numero_nota)
+        inv.db_set("serie_nfe", dfe.serie or 1)
+        inv.db_set("chave_nfe", dfe.chave_acesso)
+        inv.db_set("status_fiscal", "Rejeitada")
+        frappe.db.commit()
+
+        return {
+            "success": False,
+            "pos_invoice": inv.name,
+            "documento_fiscal": dfe.name,
+            "numero_nfe": dfe.numero_nota,
+            "chave_nfe": dfe.chave_acesso,
+            "status": "Rejeitado",
+            "mensagem": str(e).replace("<", "&lt;").replace(">", "&gt;")
         }

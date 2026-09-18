@@ -14,7 +14,8 @@ after_migrate = "erpz_fiscal.setup.after_migrate"
 
 # Client Scripts dos DocTypes
 doctype_js = {
-    "Sales Order": "public/js/sales_order.js"
+    "Sales Order": "public/js/sales_order.js",
+    "POS Invoice": "public/js/pos_invoice.js"
 }
 
 # Document Events
@@ -24,6 +25,9 @@ doc_events = {
     },
     "Sales Invoice": {
         "on_cancel": "erpz_fiscal.api.nfe.validar_cancelamento_fatura"
+    },
+    "POS Invoice": {
+        "on_submit": "erpz_fiscal.api.nfe.pos_invoice_on_submit"
     }
 }
 

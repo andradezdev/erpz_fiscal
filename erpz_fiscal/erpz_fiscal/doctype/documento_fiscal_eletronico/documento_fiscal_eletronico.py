@@ -226,8 +226,10 @@ class DocumentoFiscalEletronico(Document):
                         self.xml_autorizado = xml_text
                         self.save(ignore_permissions=True)
 
-                        if self.get("voucher_type") == "Sales Invoice" and self.get("voucher_no"):
-                            frappe.db.set_value("Sales Invoice", self.voucher_no, {
+                        vtype = self.get("voucher_type")
+                        vno = self.get("voucher_no")
+                        if vtype in ("Sales Invoice", "POS Invoice") and vno:
+                            frappe.db.set_value(vtype, vno, {
                                 "documento_fiscal": self.name,
                                 "status_fiscal": "Autorizada",
                                 "chave_nfe": self.chave_acesso,
@@ -251,8 +253,10 @@ class DocumentoFiscalEletronico(Document):
                         self.protocolo = ""
                         self.save(ignore_permissions=True)
 
-                        if self.get("voucher_type") == "Sales Invoice" and self.get("voucher_no"):
-                            frappe.db.set_value("Sales Invoice", self.voucher_no, {
+                        vtype = self.get("voucher_type")
+                        vno = self.get("voucher_no")
+                        if vtype in ("Sales Invoice", "POS Invoice") and vno:
+                            frappe.db.set_value(vtype, vno, {
                                 "documento_fiscal": self.name,
                                 "status_fiscal": "Rejeitada",
                                 "chave_nfe": self.chave_acesso,
@@ -284,8 +288,10 @@ class DocumentoFiscalEletronico(Document):
         self.xml_autorizado = xml_proc
         self.save(ignore_permissions=True)
 
-        if self.get("voucher_type") == "Sales Invoice" and self.get("voucher_no"):
-            frappe.db.set_value("Sales Invoice", self.voucher_no, {
+        vtype = self.get("voucher_type")
+        vno = self.get("voucher_no")
+        if vtype in ("Sales Invoice", "POS Invoice") and vno:
+            frappe.db.set_value(vtype, vno, {
                 "documento_fiscal": self.name,
                 "status_fiscal": "Autorizada",
                 "chave_nfe": self.chave_acesso,

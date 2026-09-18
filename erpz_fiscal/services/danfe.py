@@ -45,14 +45,27 @@ def gerar_cupom_nfce_pdf(doc_fiscal):
     y = height - 8 * mm
     
     # 1. Cabeçalho do Estabelecimento
+    empresa = doc_fiscal.get("empresa") or "EMPRESA"
+    cnpj_str = "18.594.769/0001-40"
+    ie_str = "ISENTO"
+    ender_str = "ARTUR NOGUEIRA / SP"
+    if frappe.db.exists("Configuracao Fiscal Empresa", empresa):
+        cfg = frappe.get_doc("Configuracao Fiscal Empresa", empresa)
+        if cfg.cnpj:
+            c_raw = cfg.cnpj.replace(".", "").replace("-", "").replace("/", "")
+            if len(c_raw) == 14:
+                cnpj_str = f"{c_raw[:2]}.{c_raw[2:5]}.{c_raw[5:8]}/{c_raw[8:12]}-{c_raw[12:]}"
+        if cfg.inscricao_estadual:
+            ie_str = cfg.inscricao_estadual
+
     c.setFont("Helvetica-Bold", 10)
-    c.drawCentredString(width / 2, y, str(doc_fiscal.get("empresa") or "EMPRESA").upper()[:35])
+    c.drawCentredString(width / 2, y, str(empresa).upper()[:35])
     y -= 4.5 * mm
     
     c.setFont("Helvetica", 7.5)
-    c.drawCentredString(width / 2, y, "CNPJ: 12.345.678/0001-95  IE: 123.456.789.112")
+    c.drawCentredString(width / 2, y, f"CNPJ: {cnpj_str}  IE: {ie_str}")
     y -= 3.5 * mm
-    c.drawCentredString(width / 2, y, "AVENIDA PAULISTA, 1500 - SÃO PAULO/SP")
+    c.drawCentredString(width / 2, y, ender_str)
     y -= 4 * mm
     
     c.setLineWidth(0.5)
