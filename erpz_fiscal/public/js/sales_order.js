@@ -76,6 +76,26 @@ frappe.ui.form.on('Sales Order', {
                             }
                         });
                         d.show();
+                    } else if (r.message) {
+                        frm.reload_doc();
+                        frappe.msgprint({
+                            title: __('Retorno da SEFAZ: NF-e Rejeitada'),
+                            indicator: 'red',
+                            message: `
+                                <div class="p-2">
+                                    <h5 class="text-danger font-weight-bold mb-2">A SEFAZ não autorizou o documento fiscal</h5>
+                                    <div class="alert alert-danger p-2 mb-3 font-weight-bold" style="font-size: 13px;">
+                                        ${r.message.mensagem}
+                                    </div>
+                                    <table class="table table-bordered small">
+                                        <tr><th style="width: 35%;">Documento Gerado</th><td><a href="/desk/documento-fiscal-eletronico/${r.message.documento_fiscal}" target="_blank"><b>${r.message.documento_fiscal}</b></a></td></tr>
+                                        <tr><th>Chave de Acesso</th><td><code>${r.message.chave_nfe}</code></td></tr>
+                                        <tr><th>Fatura Gerada</th><td>${r.message.sales_invoice}</td></tr>
+                                        <tr><th>Situação</th><td><span class="badge badge-danger font-weight-bold">Rejeitada na SEFAZ</span></td></tr>
+                                    </table>
+                                </div>
+                            `
+                        });
                     }
                 },
                 error: function(err) {

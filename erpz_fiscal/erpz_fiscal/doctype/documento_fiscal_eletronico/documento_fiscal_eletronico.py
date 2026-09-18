@@ -144,32 +144,146 @@ class DocumentoFiscalEletronico(Document):
 
     @frappe.whitelist()
     def transmitir_sefaz(self):
-        # Validação do Certificado A1 quando em Modo Real
+        # Validação do modo de operação da empresa
         modo_real = False
         if frappe.db.exists("Configuracao Fiscal Empresa", self.get("empresa")):
             cfg = frappe.get_doc("Configuracao Fiscal Empresa", self.get("empresa"))
-            if "1 - Produção" in (cfg.get("modo_operacao") or ""):
+            if "1 - Produção" in (cfg.get("modo_operacao") or "") or "Homologação Real" in (cfg.get("modo_operacao") or ""):
                 modo_real = True
 
-        if modo_real:
-            cert_valido = frappe.db.exists("Certificado Digital", {"empresa": self.get("empresa"), "status": "Ativo"})
-            if not cert_valido:
-                frappe.throw(_("Certificado Digital A1 não cadastrado ou inativo para a empresa {0}. Cadastre o arquivo .pfx e senha no menu Certificados Digitais para transmitir para a SEFAZ.").format(self.get("empresa")))
         if not self.get("chave_acesso"):
             self.gerar_chave_acesso()
 
+        if modo_real:
+            # 1. Validação de Certificado Digital A1 Ativo
+            cert_valido = frappe.db.exists("Certificado Digital", {"empresa": self.get("empresa"), "status": "Ativo"})
+            if not cert_valido:
+                frappe.throw(_("Certificado Digital A1 não cadastrado ou inativo para a empresa {0}. Cadastre o arquivo .pfx e senha no menu Certificados Digitais para transmitir para a SEFAZ.").format(self.get("empresa")))
+
+            # 2. Transmissão Real via WebService SEFAZ (mTLS)
+            from erpz_fiscal.api.nfe import get_sefaz_client
+            from erpz_fiscal.services.signer import SignerA1
+            from erpbrasil.edoc.nfe import WS_NFE_AUTORIZACAO
+            import datetime
+            from lxml import etree
+
+            nfe_client, amb_label, cert_doc = get_sefaz_client(self.get("empresa"))
+            file_doc = frappe.get_doc("File", {"file_url": cert_doc.arquivo_pfx})
+            pwd = cert_doc.get_password("senha_certificado") or cert_doc.senha_certificado
+
+            # Assina o XML no padrão ICP-Brasil
+            xml_nfe = self.montar_xml_nfe()
+            signer = SignerA1(file_doc.get_content(), pwd)
+            signed_nfe = signer.sign_xml(xml_nfe, reference_uri=f"NFe{self.chave_acesso}")
+            self.xml_assinado = signed_nfe
+
+            # Monta lote de envio síncrono
+            lote_id = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            envi_nfe_str = f"""<?xml version="1.0" encoding="UTF-8"?>
+<enviNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <idLote>{lote_id}</idLote>
+  <indSinc>1</indSinc>
+  {signed_nfe}
+</enviNFe>"""
+
+            endpoint = nfe_client._get_ws_endpoint(WS_NFE_AUTORIZACAO)
+            trans = nfe_client._transmissao
+
+            try:
+                with trans.cliente(endpoint):
+                    etree_doc = etree.fromstring(envi_nfe_str.encode("utf-8"))
+                    res = trans.enviar("nfeAutorizacaoLote", etree_doc)
+                    xml_text = res.text if hasattr(res, "text") else str(res)
+
+                    ret_root = etree.fromstring(xml_text.encode("utf-8") if isinstance(xml_text, str) else xml_text)
+                    ns = {"nfe": "http://www.portalfiscal.inf.br/nfe"}
+
+                    infProt = ret_root.find(".//nfe:protNFe/nfe:infProt", ns) or ret_root.find(".//infProt")
+                    retEnvi = ret_root.find(".//nfe:retEnviNFe", ns) or ret_root.find(".//retEnviNFe")
+
+                    cstat = None
+                    xmotivo = None
+                    nprot = None
+                    dhrecbto = None
+
+                    if infProt is not None:
+                        cstat = infProt.findtext("nfe:cStat", namespaces=ns) or infProt.findtext("cStat")
+                        xmotivo = infProt.findtext("nfe:xMotivo", namespaces=ns) or infProt.findtext("xMotivo")
+                        nprot = infProt.findtext("nfe:nProt", namespaces=ns) or infProt.findtext("nProt")
+                        dhrecbto = infProt.findtext("nfe:dhRecbto", namespaces=ns) or infProt.findtext("dhRecbto")
+                    elif retEnvi is not None:
+                        cstat = retEnvi.findtext("nfe:cStat", namespaces=ns) or retEnvi.findtext("cStat")
+                        xmotivo = retEnvi.findtext("nfe:xMotivo", namespaces=ns) or retEnvi.findtext("xMotivo")
+
+                    self.codigo_status_sefaz = cstat or "999"
+                    self.mensagem_sefaz = xmotivo or "Sem mensagem da SEFAZ"
+
+                    if cstat == "100":
+                        self.status = "Autorizado"
+                        self.protocolo = str(nprot)
+                        self.data_autorizacao = dhrecbto or now_datetime()
+                        self.motivo_rejeicao = ""
+                        self.xml_autorizado = xml_text
+                        self.save(ignore_permissions=True)
+
+                        if self.get("voucher_type") == "Sales Invoice" and self.get("voucher_no"):
+                            frappe.db.set_value("Sales Invoice", self.voucher_no, {
+                                "documento_fiscal": self.name,
+                                "status_fiscal": "Autorizada",
+                                "chave_nfe": self.chave_acesso,
+                                "numero_nfe": self.numero_nota,
+                                "serie_nfe": self.get("serie") or 1
+                            })
+
+                        frappe.db.commit()
+                        return {
+                            "success": True,
+                            "status": "Autorizado",
+                            "cStat": "100",
+                            "numero_nota": self.numero_nota,
+                            "protocolo": self.protocolo,
+                            "chave_acesso": self.chave_acesso,
+                            "mensagem": self.mensagem_sefaz
+                        }
+                    else:
+                        self.status = "Rejeitado"
+                        self.motivo_rejeicao = f"[{cstat}] {xmotivo}"
+                        self.protocolo = ""
+                        self.save(ignore_permissions=True)
+
+                        if self.get("voucher_type") == "Sales Invoice" and self.get("voucher_no"):
+                            frappe.db.set_value("Sales Invoice", self.voucher_no, {
+                                "documento_fiscal": self.name,
+                                "status_fiscal": "Rejeitada",
+                                "chave_nfe": self.chave_acesso,
+                                "numero_nfe": self.numero_nota,
+                                "serie_nfe": self.get("serie") or 1
+                            })
+
+                        frappe.db.commit()
+                        frappe.throw(_("Rejeição da SEFAZ ({0}): {1}").format(cstat, xmotivo))
+
+            except Exception as e:
+                self.status = "Rejeitado"
+                self.mensagem_sefaz = str(e)
+                self.motivo_rejeicao = str(e)
+                self.save(ignore_permissions=True)
+                frappe.db.commit()
+                raise e
+
+        # Modo de Simulação / Sandbox Interno
         self.status = "Autorizado"
         self.codigo_status_sefaz = "100"
         self.protocolo = f"13526{random.randint(100000000, 999999999)}"
         self.data_autorizacao = now_datetime()
         self.mensagem_sefaz = "Autorizado o uso da NF-e (100)" if "55" in (self.get("modelo_fiscal") or "") else "Autorizado o uso da NFC-e (100)"
         self.motivo_rejeicao = ""
-        
+
         xml_proc = self.montar_proc_nfe()
         self.xml_assinado = xml_proc
         self.xml_autorizado = xml_proc
         self.save(ignore_permissions=True)
-        
+
         if self.get("voucher_type") == "Sales Invoice" and self.get("voucher_no"):
             frappe.db.set_value("Sales Invoice", self.voucher_no, {
                 "documento_fiscal": self.name,
@@ -178,7 +292,7 @@ class DocumentoFiscalEletronico(Document):
                 "numero_nfe": self.numero_nota,
                 "serie_nfe": self.get("serie") or 1
             })
-            
+
         frappe.db.commit()
         return {
             "success": True,
@@ -189,7 +303,6 @@ class DocumentoFiscalEletronico(Document):
             "chave_acesso": self.chave_acesso,
             "mensagem": self.mensagem_sefaz
         }
-
     @frappe.whitelist()
     def consultar_status_sefaz(self):
         if not self.get("chave_acesso"):

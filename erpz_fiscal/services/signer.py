@@ -1,9 +1,8 @@
 import frappe
 from cryptography.hazmat.primitives.serialization import pkcs12
-from cryptography.hazmat.primitives import hashes
-import base64
 from lxml import etree
 import signxml
+from erpbrasil.assinatura.assinatura import XMLSignerWithSHA1
 
 class SignerA1:
     """Assinador Digital XMLDSig ICP-Brasil para NF-e/NFC-e/CT-e"""
@@ -17,16 +16,17 @@ class SignerA1:
     def sign_xml(self, xml_string, reference_uri=None):
         """Assina uma string XML no padrão da SEFAZ"""
         root = etree.fromstring(xml_string.encode('utf-8'))
-        signer = signxml.XMLSigner(
+        signer = XMLSignerWithSHA1(
             method=signxml.methods.enveloped,
             signature_algorithm='rsa-sha1',
             digest_algorithm='sha1',
             c14n_algorithm='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
         )
+        certs_chain = [self.certificate] + (self.additional_certificates or [])
         signed_root = signer.sign(
             root,
             key=self.private_key,
-            cert=self.certificate,
+            cert=certs_chain,
             reference_uri=reference_uri
         )
         return etree.tostring(signed_root, encoding='utf-8').decode('utf-8')

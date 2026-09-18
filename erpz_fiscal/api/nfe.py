@@ -85,25 +85,40 @@ def faturar_sales_order_individual(sales_order):
     dfe.calcular_totais()
     dfe.insert(ignore_permissions=True)
 
-    # 3. Transmite e autoriza na SEFAZ
-    res = dfe.transmitir_sefaz()
+    # 3. Transmite para a SEFAZ
+    try:
+        res = dfe.transmitir_sefaz()
+        so.db_set("documento_fiscal", dfe.name)
+        so.db_set("numero_nfe", str(dfe.numero_nota))
+        so.db_set("chave_nfe", dfe.chave_acesso)
+        so.db_set("status_fiscal", "Autorizada" if dfe.status == "Autorizado" else "Rejeitada")
+        frappe.db.commit()
 
-    # 4. Atualiza o Pedido de Venda
-    so.db_set("documento_fiscal", dfe.name)
-    so.db_set("numero_nfe", str(dfe.numero_nota))
-    so.db_set("chave_nfe", dfe.chave_acesso)
-    so.db_set("status_fiscal", "Autorizada" if dfe.status == "Autorizado" else "Pendente")
-    frappe.db.commit()
+        return {
+            "success": dfe.status == "Autorizado",
+            "sales_invoice": inv.name,
+            "documento_fiscal": dfe.name,
+            "numero_nfe": dfe.numero_nota,
+            "chave_nfe": dfe.chave_acesso,
+            "status": dfe.status,
+            "mensagem": dfe.mensagem_sefaz or dfe.motivo_rejeicao
+        }
+    except Exception as e:
+        so.db_set("documento_fiscal", dfe.name)
+        so.db_set("numero_nfe", str(dfe.numero_nota))
+        so.db_set("chave_nfe", dfe.chave_acesso)
+        so.db_set("status_fiscal", "Rejeitada")
+        frappe.db.commit()
 
-    return {
-        "success": True,
-        "sales_invoice": inv.name,
-        "documento_fiscal": dfe.name,
-        "numero_nfe": dfe.numero_nota,
-        "chave_nfe": dfe.chave_acesso,
-        "status": dfe.status,
-        "mensagem": dfe.mensagem_sefaz
-    }
+        return {
+            "success": False,
+            "sales_invoice": inv.name,
+            "documento_fiscal": dfe.name,
+            "numero_nfe": dfe.numero_nota,
+            "chave_nfe": dfe.chave_acesso,
+            "status": "Rejeitado",
+            "mensagem": str(e).replace("<", "&lt;").replace(">", "&gt;")
+        }
 
 
 @frappe.whitelist()
