@@ -510,3 +510,22 @@ def baixar_arquivo_sped_fiscal_txt(empresa=None, from_date=None, to_date=None, g
         "conteudo_txt": txt_content,
         "nome_arquivo": nome_arquivo
     }
+
+
+@frappe.whitelist()
+def baixar_arquivo_efd_contribuicoes_txt(empresa=None, from_date=None, to_date=None):
+    """Gera e retorna o arquivo TXT da EFD Contribuições (PIS/COFINS) para o PVA"""
+    from erpz_fiscal.erpz_fiscal.report.efd_contribuicoes_pis_cofins.efd_contribuicoes_pis_cofins import execute
+    cols, data = execute({
+        "empresa": empresa,
+        "from_date": from_date,
+        "to_date": to_date
+    })
+    txt_content = "\r\n".join([d["linha"] for d in data]) + "\r\n"
+    dt_ref = str(to_date or "20260930").replace("-", "")
+    nome_arquivo = f"EFD_CONTRIBUICOES_{empresa or 'EMPRESA'}_{dt_ref}.txt"
+    return {
+        "success": True,
+        "conteudo_txt": txt_content,
+        "nome_arquivo": nome_arquivo
+    }
