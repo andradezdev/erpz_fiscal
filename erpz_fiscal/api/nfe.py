@@ -428,7 +428,7 @@ def sincronizar_mde_sefaz(empresa=None):
   </distNSU>
 </distDFeInt>"""
 
-    endpoint = "https://hom.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl" if tp_amb == "2" else "https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl"
+    endpoint = "https://hom1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl" if tp_amb == "2" else "https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl"
     trans = nfe_client._transmissao
 
     novas_notas = 0
