@@ -1,7 +1,8 @@
+import re
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, now_datetime, get_datetime
+from frappe.utils import flt, cint, now_datetime, get_datetime
 import random
 
 class DocumentoFiscalEletronico(Document):
@@ -73,6 +74,31 @@ class DocumentoFiscalEletronico(Document):
                 item.aliquota_cbs = flt(regra.aliquota_cbs if regra.aliquota_cbs is not None else 8.80)
                 item.base_cbs = vl_prod
                 item.valor_cbs = item.base_cbs * (item.aliquota_cbs / 100)
+
+                # 6. DIFAL / Partilha Interestadual (EC 87/2015)
+                uf_dest = self.destinatario_uf or "SP"
+                if uf_dest != "SP" and cint(self.destinatario_consumidor_final) == 1 and str(self.destinatario_indicador_ie or "").startswith("9"):
+                    origem_item = str(frappe.db.get_value("Item", item.item_code, "origem_fiscal") or "0")
+                    if origem_item[:1] in ("1", "2", "3", "8"):
+                        aliq_inter = 4.0
+                    elif uf_dest in ("AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "PA", "PB", "PE", "PI", "RN", "RO", "RR", "SE", "TO"):
+                        aliq_inter = 7.0
+                    else:
+                        aliq_inter = 12.0
+
+                    aliq_dest = flt(item.aliquota_icms_uf_dest or 18.0)
+                    aliq_fcp = flt(item.aliquota_fcp_uf_dest or 0.0)
+                    difal_pct = max(0.0, aliq_dest - aliq_inter)
+
+                    item.valor_bc_difal = vl_prod
+                    item.aliquota_icms_inter = aliq_inter
+                    item.aliquota_icms_uf_dest = aliq_dest
+                    item.valor_difal_dest = round(vl_prod * (difal_pct / 100.0), 2)
+                    item.valor_fcp_dest = round(vl_prod * (aliq_fcp / 100.0), 2)
+                else:
+                    item.valor_bc_difal = 0
+                    item.valor_difal_dest = 0
+                    item.valor_fcp_dest = 0
             else:
                 item.valor_icms = 0
                 item.valor_icms_st = 0
@@ -96,6 +122,9 @@ class DocumentoFiscalEletronico(Document):
         tot_cofins = sum(flt(i.get("valor_cofins")) for i in itens)
         tot_ibs = sum(flt(i.get("valor_ibs")) for i in itens)
         tot_cbs = sum(flt(i.get("valor_cbs")) for i in itens)
+        tot_difal = sum(flt(i.get("valor_difal_dest")) for i in itens)
+        tot_fcp = sum(flt(i.get("valor_fcp_dest")) for i in itens)
+        tot_deson = sum(flt(i.get("valor_icms_desonerado")) for i in itens)
         
         self.valor_produtos = tot_prod
         self.valor_icms = tot_icms
@@ -105,7 +134,27 @@ class DocumentoFiscalEletronico(Document):
         self.valor_cofins = tot_cofins
         self.valor_ibs = tot_ibs
         self.valor_cbs = tot_cbs
-        self.valor_total = tot_prod + flt(self.get("valor_frete")) + tot_st + tot_ipi - flt(self.get("valor_desconto"))
+        self.total_difal_destino = tot_difal
+        self.total_fcp_destino = tot_fcp
+        self.total_icms_desonerado = tot_deson
+
+        v_total_bruto = tot_prod + flt(self.get("valor_frete")) + tot_st + tot_ipi - flt(self.get("valor_desconto"))
+        self.valor_total = v_total_bruto
+
+        # Retenções Federais na Fonte (CSRF / IRRF / INSS)
+        ret_pis = round(v_total_bruto * 0.0065, 2) if self.reter_csrf else 0.0
+        ret_cofins = round(v_total_bruto * 0.03, 2) if self.reter_csrf else 0.0
+        ret_csll = round(v_total_bruto * 0.01, 2) if self.reter_csrf else 0.0
+        ret_irrf = round(v_total_bruto * 0.015, 2) if self.reter_irrf else 0.0
+        ret_inss = round(v_total_bruto * 0.11, 2) if self.reter_inss else 0.0
+
+        self.valor_retido_pis = ret_pis
+        self.valor_retido_cofins = ret_cofins
+        self.valor_retido_csll = ret_csll
+        self.valor_retido_irrf = ret_irrf
+        self.valor_retido_inss = ret_inss
+        self.total_retencoes_federais = ret_pis + ret_cofins + ret_csll + ret_irrf + ret_inss
+        self.valor_liquido_faturar = max(0.0, v_total_bruto - self.total_retencoes_federais)
 
     @frappe.whitelist()
     def gerar_chave_acesso(self):
@@ -409,6 +458,23 @@ class DocumentoFiscalEletronico(Document):
             v_pis_total += flt(item.get("valor_pis"))
             v_cofins_total += flt(item.get("valor_cofins"))
             
+            cbenef_tag = f"<cBenef>{item.get('codigo_beneficio_fiscal')}</cBenef>" if item.get("codigo_beneficio_fiscal") else ""
+            
+            tag_difal_item = ""
+            if flt(item.get("valor_difal_dest")) > 0 or flt(item.get("valor_fcp_dest")) > 0:
+                tag_difal_item = f"""
+        <ICMSUFDest>
+          <vBCUFDest>{flt(item.get("valor_bc_difal")):.2f}</vBCUFDest>
+          <vBCFCPUFDest>{flt(item.get("valor_bc_difal")):.2f}</vBCFCPUFDest>
+          <pFCPUFDest>{flt(item.get("aliquota_fcp_uf_dest")):.2f}</pFCPUFDest>
+          <pICMSUFDest>{flt(item.get("aliquota_icms_uf_dest")):.2f}</pICMSUFDest>
+          <pICMSInter>{flt(item.get("aliquota_icms_inter")):.2f}</pICMSInter>
+          <pICMSInterPart>100.00</pICMSInterPart>
+          <vFCPUFDest>{flt(item.get("valor_fcp_dest")):.2f}</vFCPUFDest>
+          <vICMSUFDest>{flt(item.get("valor_difal_dest")):.2f}</vICMSUFDest>
+          <vICMSUFRemet>0.00</vICMSUFRemet>
+        </ICMSUFDest>"""
+
             itens_xml += f"""
     <det nItem="{idx}">
       <prod>
@@ -416,6 +482,7 @@ class DocumentoFiscalEletronico(Document):
         <cEAN>SEM GTIN</cEAN>
         <xProd>{item.get("descricao")}</xProd>
         <NCM>{(item.get("ncm") or "00000000").replace(".", "")[:8].zfill(8)}</NCM>
+        {cbenef_tag}
         <CFOP>{item.get("cfop") or ("5102" if is_nfce else "5102")}</CFOP>
         <uCom>{item.get("unidade") or "UN"}</uCom>
         <qCom>{flt(item.get("quantidade")):.4f}</qCom>
@@ -438,6 +505,7 @@ class DocumentoFiscalEletronico(Document):
             <vICMS>{flt(item.get("valor_icms")):.2f}</vICMS>
           </ICMS00>
         </ICMS>
+        {tag_difal_item}
         <PIS>
           <PISAliq>
             <CST>{item.get("cst_pis") or "01"}</CST>
@@ -468,6 +536,18 @@ class DocumentoFiscalEletronico(Document):
         chave = self.get("chave_acesso") or ""
         c_nf = chave[35:43] if len(chave) >= 43 else "12345678"
         c_dv = chave[-1] if len(chave) == 44 else "1"
+
+        
+        ret_trib_tag = ""
+        if flt(self.get("total_retencoes_federais")) > 0:
+            ret_trib_tag = f"""
+    <retTrib>
+      <vRetPIS>{flt(self.get("valor_retido_pis")):.2f}</vRetPIS>
+      <vRetCOFINS>{flt(self.get("valor_retido_cofins")):.2f}</vRetCOFINS>
+      <vRetCSLL>{flt(self.get("valor_retido_csll")):.2f}</vRetCSLL>
+      <vBCIRRF>{flt(self.get("valor_total")):.2f}</vBCIRRF>
+      <vIRRF>{flt(self.get("valor_retido_irrf")):.2f}</vIRRF>
+    </retTrib>"""
 
         transp_tag = """
     <transp>
@@ -585,12 +665,15 @@ class DocumentoFiscalEletronico(Document):
       <ICMSTot>
         <vBC>{v_bc_total:.2f}</vBC>
         <vICMS>{v_icms_total:.2f}</vICMS>
-        <vICMSDeson>0.00</vICMSDeson>
+        <vICMSDeson>{flt(self.get("total_icms_desonerado")):.2f}</vICMSDeson>
         <vFCP>0.00</vFCP>
         <vBCST>{flt(self.get("valor_icms_st")):.2f}</vBCST>
         <vST>{flt(self.get("valor_icms_st")):.2f}</vST>
         <vFCPST>0.00</vFCPST>
         <vFCPSTRet>0.00</vFCPSTRet>
+        <vFCPUFDest>{flt(self.get("total_fcp_destino")):.2f}</vFCPUFDest>
+        <vICMSUFDest>{flt(self.get("total_difal_destino")):.2f}</vICMSUFDest>
+        <vICMSUFRemet>0.00</vICMSUFRemet>
         <vProd>{v_prod:.2f}</vProd>
         <vFrete>{v_frete:.2f}</vFrete>
         <vSeg>0.00</vSeg>
@@ -605,6 +688,7 @@ class DocumentoFiscalEletronico(Document):
         <vTotTrib>{v_trib:.2f}</vTotTrib>
       </ICMSTot>
     </total>
+    {ret_trib_tag}
     {transp_tag}
     {cobr_tag}
     <infAdic>

@@ -2,7 +2,7 @@
 
 Solução corporativa de **Localização Fiscal Brasileira** desenvolvida nativamente para o **Frappe Framework** e **ERPNext** (v16), inspirada nas melhores práticas da **OCA/l10n-brazil** e em conformidade estrita com o Manual de Orientação do Contribuinte (MOC 7.0 / SEFAZ 4.00), Reforma Tributária Nacional (EC 132/2023) e legislação do SPED.
 
-Suporta emissão de **NF-e (Mod. 55)**, **NFC-e (Mod. 65)**, **NFS-e Dual-Mode**, **Importação de XML de Compras (Inbound)** com De-Para automático, **Manifestação do Destinatário (MDe / Distribuição DF-e)**, **Eventos SEFAZ (Cancelamento e CC-e)**, motor de regras tributárias com cálculo automático de impostos (incluindo IBS/CBS), assinatura digital ICP-Brasil A1 via mTLS, geração de DANFE/Cupom térmico e **Monitor SEFAZ em tempo real**.
+Suporta emissão de **NF-e (Mod. 55)**, **NFC-e (Mod. 65)**, **NFS-e Dual-Mode**, **DIFAL e Partilha de ICMS (EC 87/2015)**, **Retenções Federais na Fonte (CSRF / IRRF / INSS)**, **Operações de Remessa e Retorno**, **Devoluções com Chave Referenciada (<NFref>)**, **Importação de XML de Compras (Inbound)** com De-Para automático, **Manifestação do Destinatário (MDe / Distribuição DF-e)**, **Eventos SEFAZ (Cancelamento e CC-e)**, motor de regras tributárias com cálculo automático de impostos (incluindo IBS/CBS), assinatura digital ICP-Brasil A1 via mTLS, geração de DANFE/Cupom térmico e **Monitor SEFAZ em tempo real**.
 
 ---
 
@@ -15,11 +15,16 @@ O **ERPZ Fiscal** moderniza a gestão fiscal no Frappe/ERPNext, substituindo mó
    - **Cancelamento Oficial na SEFAZ (`110111`)**: Transmissão via WebService com justificativa legal obrigatória e cancelamento automático de faturas e estoque.
    - **Carta de Correção Eletrônica - CC-e (`110110`)**: Transmissão oficial de correções permitidas pela legislação com controle sequencial.
    - **Notas Referenciadas (`<NFref>`)**: Suporte a notas de devolução referenciando a chave de acesso de 44 dígitos da nota de origem.
-4. **Motor Tributário Automático**: Cálculo automático de ICMS, ICMS-ST (MVA), IPI, PIS, COFINS e os novos tributos da **Reforma Tributária (IBS 17,7% e CBS 8,8%)**.
-5. **Emissão Oficial NF-e e NFC-e**: Geração do XML no leiaute SEFAZ 4.00, assinatura digital XMLDSig e transmissão direta aos WebServices estaduais.
-6. **Impressão Oficial de DANFE**: Roteamento automático entre **DANFE A4 Retrato** (Mod. 55) e **Cupom Fiscal Térmico 80mm com QR Code v2.0** (Mod. 65) via `brazilfiscalreport`.
-7. **NFS-e Municipal Dual-Mode**: Suporte a emissão de serviços via Gateway API REST (Focus NFe, PlugNotas, Nuvem Fiscal) ou Conexão Direta WebService Municipal / Padrão Nacional com certificado A1.
-8. **Monitor SEFAZ & Consultas WebService**: Painel gerencial em formato de tabela com indicadores cStat, motivos de rejeição, totalizadores de IBS/CBS e botões de consulta em tempo real (Status do Serviço `107`, Consulta Situação de Nota `217` e Consulta Cadastro no CADESP `257`).
+4. **Tributação Especial e Regras Avançadas**:
+   - **DIFAL e Partilha de ICMS (EC 87/2015)**: Cálculo automático do diferencial de alíquotas e Fundo de Combate à Pobreza (FCP) para operações interestaduais com consumidor final não contribuinte, com geração das tags `<ICMSUFDest>` e totalizadores.
+   - **Retenções Federais na Fonte (CSRF / IRRF / INSS)**: Apuração automática de retenções de PIS (0,65%), COFINS (3,00%), CSLL (1,00%), IRRF (1,50%) e INSS (11,00%), com geração da tag `<retTrib>` e dedução do valor líquido a faturar.
+   - **Operações de Remessa e Retorno**: Matriz de CFOPs e regras tributárias automáticas para Remessa e Retorno de Conserto (5.915/5.916), Industrialização por Encomenda (5.901/5.902/5.124), Venda e Remessa para Entrega Futura (5.922/5.116) e Bonificação/Brinde (5.910).
+   - **Desoneração de ICMS e Benefícios**: Tratamento de motivos de desoneração (`motDesICMS`), valor desonerado (`vICMSDeson`) e Código de Benefício Fiscal estadual (`cBenef`).
+5. **Motor Tributário Automático**: Cálculo automático de ICMS, ICMS-ST (MVA), IPI, PIS, COFINS e os novos tributos da **Reforma Tributária (IBS 17,7% e CBS 8,8%)**.
+6. **Emissão Oficial NF-e e NFC-e**: Geração do XML no leiaute SEFAZ 4.00, assinatura digital XMLDSig e transmissão direta aos WebServices estaduais.
+7. **Impressão Oficial de DANFE**: Roteamento automático entre **DANFE A4 Retrato** (Mod. 55) e **Cupom Fiscal Térmico 80mm com QR Code v2.0** (Mod. 65) via `brazilfiscalreport`.
+8. **NFS-e Municipal Dual-Mode**: Suporte a emissão de serviços via Gateway API REST (Focus NFe, PlugNotas, Nuvem Fiscal) ou Conexão Direta WebService Municipal / Padrão Nacional com certificado A1.
+9. **Monitor SEFAZ & Consultas WebService**: Painel gerencial em formato de tabela com indicadores cStat, motivos de rejeição, totalizadores de IBS/CBS e botões de consulta em tempo real (Status do Serviço `107`, Consulta Situação de Nota `217` e Consulta Cadastro no CADESP `257`).
 
 ---
 
@@ -29,7 +34,7 @@ O aplicativo estrutura os dados em DocTypes nativos do Frappe, padronizados com 
 
 | DocType | Tipo | Finalidade |
 | :--- | :--- | :--- |
-| **`Documento Fiscal Eletronico`** | Principal | Registro do documento fiscal eletrônico (NF-e mod. 55 e NFC-e mod. 65). Armazena itens, totais, base de cálculo de impostos, XML assinado, XML autorizado, Chave de Acesso (44 dígitos), protocolo, chave referenciada e status SEFAZ. |
+| **`Documento Fiscal Eletronico`** | Principal | Registro do documento fiscal eletrônico (NF-e mod. 55 e NFC-e mod. 65). Armazena itens, totais, base de cálculo de impostos, DIFAL, FCP, retenções federais (`retTrib`), chave referenciada (`NFref`), XML assinado, XML autorizado, protocolo e status SEFAZ. |
 | **`Importacao NFe Compra`** | Inbound | Importador inteligente de XML de compra. Faz a leitura do XML do fornecedor, vincula fornecedor, executa De-Para de itens e CFOPs e gera com 1 clique a Entrada de Estoque (`Purchase Receipt`) e a Fatura (`Purchase Invoice`). |
 | **`Item Importacao NFe Compra`** | Tabela Filha | Linhas dos itens do XML importado com quantidades, unidades, impostos destacados e De-Para de produto interno. |
 | **`Mapeamento Item Fornecedor`** | Cadastro | Tabela permanente de memória De-Para associando o código do produto no fornecedor (`cProd`) ao item interno do ERPNext com fator de conversão e CFOP padrão de entrada. |
@@ -41,86 +46,80 @@ O aplicativo estrutura os dados em DocTypes nativos do Frappe, padronizados com 
 
 ---
 
-## 2. Importador Inteligente de Compras (Inbound XML)
+## 2. DIFAL e Partilha de ICMS (Emenda Constitucional 87/2015)
+
+O ERPZ Fiscal automatiza a apuração do DIFAL para operações interestaduais destinadas a consumidor final não contribuinte:
+* Identificação automática de operação interestadual (`destinatario_uf != emitente_uf`) com `destinatario_consumidor_final = 1` e `destinatario_indicador_ie = '9 - Não Contribuinte'`.
+* Aplicação da alíquota interestadual (`pICMSInter`): 4% para produtos com conteúdo de importação (Origem 1, 2, 3, 8) e 7% ou 12% para produtos nacionais conforme a região de destino.
+* Cálculo do DIFAL e FCP:
+  $$	ext{DIFAL \%} = 	ext{Alíquota Interna UF Destino} - 	ext{Alíquota Interestadual}$$
+  $$	ext{Valor DIFAL Destino} = 	ext{Base} 	imes \left(rac{	ext{DIFAL \%}}{100}ight)$$
+  $$	ext{Valor FCP Destino} = 	ext{Base} 	imes \left(rac{	ext{Alíquota FCP \%}}{100}ight)$$
+* Geração automática do grupo `<ICMSUFDest>` por item e totalizadores `<vICMSUFDest>` e `<vFCPUFDest>` no XML da NF-e.
+
+---
+
+## 3. Retenções Federais na Fonte (CSRF / IRRF / INSS)
+
+Para fornecimento de mercadorias e serviços industriais sujeitos a retenção:
+* **CSRF (PIS/COFINS/CSLL - 4,65%)**: PIS 0,65%, COFINS 3,00% e CSLL 1,00% (Lei 10.833/2003).
+* **IRRF (1,50%)**: Imposto de Renda Retido na Fonte (Decreto 9.580/2018 - RIR).
+* **INSS (11,00%)**: Retenção previdenciária sobre mão de obra.
+* **Tag `<retTrib>`**: Montagem oficial no XML da NF-e com os valores retidos e dedução automática do valor líquido das duplicatas (`<dup>`) e do Contas a Receber.
+
+---
+
+## 4. Importador Inteligente de Compras (Inbound XML)
 
 Automatiza 100% da escrituração de mercadorias no almoxarifado a partir do XML da NF-e emitida pelo fornecedor:
-
-```
-Arquivo XML da NF-e (Upload ou Baixado da SEFAZ)
-   └── Identificação do Fornecedor (Localiza ou Cadastra Supplier no ERPNext)
-         └── Leitura dos Itens e De-Para de Produtos (cProd Fornecedor ↔ Item Interno)
-               └── Conversão de Unidades (UOM) e De-Para de CFOPs de Entrada
-                     ├── [1 Clique] Entrada no Estoque (Purchase Receipt)
-                     └── [1 Clique] Fatura de Compra & Contas a Pagar (Purchase Invoice)
-```
-
-* **Memória De-Para**: A associação realizada na primeira compra de um produto fica gravada permanentemente em `Mapeamento Item Fornecedor`. Nas compras seguintes do mesmo fornecedor, o reconhecimento é **100% automático**.
-* **Duplicatas e Prazos**: O sistema lê as tags `<cobr><dup>` do XML e preenche a programação de pagamentos da fatura com as datas e valores reais negociados.
+* **Identificação do Fornecedor**: Localiza ou cadastra o `Supplier` no ERPNext com base no CNPJ do XML.
+* **Memória De-Para (`Mapeamento Item Fornecedor`)**: Associa o código do produto do fornecedor (`cProd`) ao item interno do catálogo.
+* **Conversão de Unidades**: Converte embalagens (Caixa, Fardo) para a unidade de estoque interno.
+* **De-Para de CFOP**: Converte CFOP de saída do fornecedor para entrada de industrialização (`1.101/2.101`) ou comercialização (`1.102/2.102`).
+* **Geração em 1 Clique**: Cria a Entrada de Estoque (`Purchase Receipt`) e a Fatura de Compra (`Purchase Invoice`) com parcelas lidas das tags `<dup>`.
 
 ---
 
-## 3. Manifestação do Destinatário (MDe / Distribuição DF-e)
+## 5. Manifestação do Destinatário (MDe / Distribuição DF-e)
 
-Diretamente no ERPZ Fiscal, a empresa monitora e controla documentos fiscais emitidos contra o seu CNPJ no Brasil:
 * **Varredura por NSU**: Consulta automática ao WebService nacional `NFeDistribuicaoDFe` via Certificado Digital A1.
-* **Eventos de Manifestação**:
-  * **`Ciência da Emissão` (210210)**: Toma conhecimento da nota fiscal e libera o download imediato do XML completo (`docZip` em gzip) pela SEFAZ.
-  * **`Confirmação da Operação` (210200)**: Atesta formalmente o recebimento da mercadoria.
-  * **`Desconhecimento da Operação` (210220)**: Protege a empresa contra notas "fantasmas" emitidas indevidamente por terceiros.
-* **Botão `Importar para Estoque / Compras`**: Ao baixar o XML oficial da SEFAZ, um único clique cria a importação de compra e abre a tela de recebimento.
+* **Eventos**: Ciência da Emissão (`210210`), Confirmação da Operação (`210200`) e Desconhecimento da Operação (`210220`).
+* **Download do XML**: Baixa automática do pacote compactado (`gzip`) contendo o XML oficial da SEFAZ.
 
 ---
 
-## 4. Eventos Oficiais SEFAZ (Cancelamento e CC-e)
+## 6. Eventos Oficiais SEFAZ (Cancelamento e CC-e)
 
-* **Cancelamento de NF-e / NFC-e (`Evento 110111`)**:
-  * Disparado pelo botão **`Cancelar NF-e na SEFAZ`** na tela do Documento Fiscal.
-  * Exige justificativa com no mínimo 15 caracteres.
-  * Transmite ao WebService `nfeRecepcaoEvento4`.
-  * Ao homologar (`cStat 135`), atualiza a nota para **Cancelada**, grava o protocolo oficial e cancela a fatura correspondente no ERPNext.
-* **Carta de Correção Eletrônica - CC-e (`Evento 110110`)**:
-  * Disparada pelo botão **`Carta de Correção (CC-e)`**.
-  * Controla o sequencial do evento (`nSeqEvento = 1, 2...`).
-  * Ao homologar (`cStat 135`), registra o evento no histórico fiscal da nota.
-* **Devoluções com Chave Referenciada (`<NFref>`)**:
-  * Campo dedicado para informar a chave de 44 dígitos da nota de origem.
-  * O sistema preenche a tag obrigatória `<ide><NFref><refNFe>...</refNFe></NFref></ide>` e define a finalidade da emissão como **4 - Devolução de Mercadoria**, prevenindo rejeições na SEFAZ.
+* **Cancelamento de NF-e (`110111`)**: Transmissão oficial com justificativa legal mínima de 15 caracteres via `nfeRecepcaoEvento4`.
+* **Carta de Correção Eletrônica - CC-e (`110110`)**: Transmissão oficial de correções com controle sequencial.
+* **Devoluções com Chave Referenciada (`<NFref>`)**: Preenchimento automático da tag `<NFref><refNFe>...</refNFe></NFref>` e finalidade `4 - Devolução`.
 
 ---
 
-## 5. Motor de Regras Tributárias e Reforma Tributária (IBS / CBS)
+## 7. Motor de Regras Tributárias e Reforma Tributária (IBS / CBS)
 
 * **Tributos Tradicionais**: ICMS (Normal, Redução e FCP), ICMS-ST com MVA original e ajustada interestadual, IPI com Código de Enquadramento Legal, e PIS/COFINS (regimes cumulativo e não-cumulativo).
 * **Reforma Tributária (EC 132/2023)**:
   * **IBS (Imposto sobre Bens e Serviços)**: Alíquota padrão calculada de **17,7%**.
   * **CBS (Contribuição sobre Bens e Serviços)**: Alíquota padrão calculada de **8,8%**.
-  * Totalizadores segregados na NF-e, no XML e no Monitor SEFAZ.
 
 ---
 
-## 6. Roteador de Impressão do DANFE (`brazilfiscalreport`)
+## 8. Roteador de Impressão do DANFE (`brazilfiscalreport`)
 
 * **NF-e (Modelo 55 - Mercadorias)**: DANFE oficial A4 Retrato com código de barras Code128C, canhoto de recebimento e quadro de tributos com IBS/CBS.
-* **NFC-e (Modelo 65 - Consumidor / PDV)**: Cupom Fiscal em bobina térmica de 80mm com **QR Code oficial v2.0** para leitura por smartphone e validação na SEFAZ.
+* **NFC-e (Modelo 65 - Consumidor / PDV)**: Cupom Fiscal em bobina térmica de 80mm com **QR Code oficial v2.0**.
 
 ---
 
-## 7. Consultas em Tempo Real ao WebService da SEFAZ
+## 9. Monitor SEFAZ & Consultas WebService
 
-* **No Documento Fiscal**: Botão **`Consultar Situação na SEFAZ`** conecta com a chave de 44 dígitos (`cStat 100 - Autorizada`, `cStat 217 - Não consta na base`, `cStat 101 - Cancelada`).
-* **No Certificado Digital A1**:
-  * Botão **`Testar Conexão com SEFAZ`**: Executa ping no WebService estadual (`107 - Serviço em Operação`).
-  * Botão **`Consultar Cadastro CADESP (SEFAZ)`**: Consulta a situação cadastral do CNPJ no CADESP estadual (`257 - Não habilitado`, `111 - Consulta cadastro com uma ocorrência`).
+* **Monitor SEFAZ**: Painel gerencial em formato de tabela estruturada com linhas de grade nítidas, badges coloridos por status e filtros por Empresa, Período, Modelo e Status.
+* **Consultas em Tempo Real**: Status do Serviço (`107`), Consulta de Nota (`217`) e Consulta de Cadastro no CADESP (`257`).
 
 ---
 
-## 8. Painel Gerencial "Monitor SEFAZ"
-
-Relatório analítico em formato de tabela estruturada com bordas e linhas nítidas, badges coloridos por status e filtros por Empresa, Período, Modelo e Status.
-
----
-
-## 9. NFS-e Municipal Dual-Mode (Serviços)
+## 10. NFS-e Municipal Dual-Mode (Serviços)
 
 * **Gateway API REST**: Integração com Focus NFe, PlugNotas (TecnoSpeed) e Nuvem Fiscal.
 * **Conexão Direta Municipal**: Padrão ABRASF e prefeituras diretas assinando o RPS com o Certificado Digital A1.
@@ -128,7 +127,7 @@ Relatório analítico em formato de tabela estruturada com bordas e linhas níti
 
 ---
 
-## 10. Estrutura de Diretórios e Código-Fonte
+## 11. Estrutura de Diretórios e Código-Fonte
 
 ```
 erpz_fiscal/
@@ -141,7 +140,7 @@ erpz_fiscal/
 │   ├── doctype/
 │   │   ├── certificado_digital/   # Cadastro e parsing de certificado A1 (.pfx)
 │   │   ├── configuracao_fiscal_empresa/ # Parâmetros tributários por empresa
-│   │   ├── documento_fiscal_eletronico/ # NF-e, NFC-e, Cancelamento, CC-e e NFref
+│   │   ├── documento_fiscal_eletronico/ # NF-e, NFC-e, DIFAL, Retenções, Cancelamento, CC-e e NFref
 │   │   ├── importacao_nfe_compra/ # Importador de XML de compra (Inbound)
 │   │   ├── item_importacao_nfe_compra/ # Itens do XML e De-Para
 │   │   ├── mapeamento_item_fornecedor/ # Memória permanente de De-Para de produtos

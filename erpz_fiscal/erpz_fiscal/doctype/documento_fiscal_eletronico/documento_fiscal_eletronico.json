@@ -1,429 +1,578 @@
 {
-    "actions": [],
-    "allow_rename": 0,
-    "autoname": "format:DFE-{YYYY}-{#####}",
-    "creation": "2026-09-16 12:00:00.000000",
-    "doctype": "DocType",
-    "editable_grid": 1,
-    "engine": "InnoDB",
-    "field_order": [
-        "section_identificacao",
-        "naming_series",
-        "modelo_fiscal",
-        "empresa",
-        "numero_nota",
-        "serie",
-        "column_break_id",
-        "voucher_type",
-        "voucher_no",
-        "status",
-        "data_emissao",
-        "section_destinatario",
-        "destinatario_tipo",
-        "destinatario",
-        "destinatario_nome",
-        "destinatario_cpf_cnpj",
-        "destinatario_ie",
-        "section_valores",
-        "valor_produtos",
-        "valor_frete",
-        "valor_desconto",
-        "valor_total",
-        "column_break_totais",
-        "valor_icms",
-        "valor_pis",
-        "valor_cofins",
-        "section_transporte",
-        "transportadora",
-        "placa_veiculo",
-        "uf_veiculo",
-        "column_break_transp",
-        "quantidade_volumes",
-        "especie_volumes",
-        "peso_liquido",
-        "peso_bruto",
-        "section_itens",
-        "itens",
-        "section_sefaz",
-        "codigo_status_sefaz",
-        "motivo_rejeicao",
-        "chave_nfe_referenciada",
-        "chave_acesso",
-        "protocolo",
-        "data_autorizacao",
-        "mensagem_sefaz",
-        "section_xmls",
-        "xml_autorizado",
-        "xml_assinado",
-        "valor_icms_st",
-        "valor_ipi",
-        "section_reforma_dfe",
-        "valor_ibs",
-        "column_break_reforma_dfe",
-        "valor_cbs"
-    ],
-    "fields": [
-        {
-            "fieldname": "section_identificacao",
-            "fieldtype": "Section Break",
-            "label": "Identificação"
-        },
-        {
-            "default": "DFE-.YYYY.-.#####",
-            "fieldname": "naming_series",
-            "fieldtype": "Select",
-            "hidden": 1,
-            "label": "Série",
-            "options": "DFE-.YYYY.-.#####"
-        },
-        {
-            "fieldname": "modelo_fiscal",
-            "fieldtype": "Select",
-            "label": "Modelo Fiscal",
-            "options": "55 - NF-e\n65 - NFC-e",
-            "default": "55 - NF-e",
-            "reqd": 1,
-            "in_list_view": 1
-        },
-        {
-            "fieldname": "empresa",
-            "fieldtype": "Link",
-            "label": "Empresa",
-            "options": "Company",
-            "reqd": 1,
-            "in_list_view": 1,
-            "in_standard_filter": 1
-        },
-        {
-            "fieldname": "numero_nota",
-            "fieldtype": "Int",
-            "label": "Número da Nota",
-            "read_only": 1,
-            "in_list_view": 1
-        },
-        {
-            "fieldname": "serie",
-            "fieldtype": "Int",
-            "label": "Série",
-            "default": 1,
-            "read_only": 1
-        },
-        {
-            "fieldname": "column_break_id",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "voucher_type",
-            "fieldtype": "Select",
-            "label": "Documento de Origem",
-            "options": "Sales Invoice\nPOS Invoice\nPurchase Invoice\nManual",
-            "default": "Sales Invoice"
-        },
-        {
-            "fieldname": "voucher_no",
-            "fieldtype": "Dynamic Link",
-            "label": "Nº do Documento Origem",
-            "options": "voucher_type"
-        },
-        {
-            "fieldname": "status",
-            "fieldtype": "Select",
-            "label": "Status",
-            "options": "Rascunho\nValidado\nAssinado\nAutorizado\nCancelado\nRejeitado",
-            "default": "Rascunho",
-            "read_only": 1,
-            "in_list_view": 1,
-            "in_standard_filter": 1
-        },
-        {
-            "fieldname": "data_emissao",
-            "fieldtype": "Datetime",
-            "label": "Data Emissão"
-        },
-        {
-            "fieldname": "section_destinatario",
-            "fieldtype": "Section Break",
-            "label": "Destinatério"
-        },
-        {
-            "fieldname": "destinatario_tipo",
-            "fieldtype": "Select",
-            "label": "Tipo Destinatério",
-            "options": "Customer\nSupplier",
-            "default": "Customer"
-        },
-        {
-            "fieldname": "destinatario",
-            "fieldtype": "Dynamic Link",
-            "label": "Destinatério",
-            "options": "destinatario_tipo"
-        },
-        {
-            "fieldname": "destinatario_nome",
-            "fieldtype": "Data",
-            "label": "Nome Destinatério",
-            "in_list_view": 1
-        },
-        {
-            "fieldname": "destinatario_cpf_cnpj",
-            "fieldtype": "Data",
-            "label": "CPF/CNPJ Destinatério"
-        },
-        {
-            "fieldname": "destinatario_ie",
-            "fieldtype": "Data",
-            "label": "IE Destinatério"
-        },
-        {
-            "fieldname": "section_valores",
-            "fieldtype": "Section Break",
-            "label": "Valores e Impostos"
-        },
-        {
-            "fieldname": "valor_produtos",
-            "fieldtype": "Currency",
-            "label": "Valor dos Produtos",
-            "default": 0
-        },
-        {
-            "fieldname": "valor_frete",
-            "fieldtype": "Currency",
-            "label": "Valor do Frete",
-            "default": 0
-        },
-        {
-            "fieldname": "valor_desconto",
-            "fieldtype": "Currency",
-            "label": "Valor de Desconto",
-            "default": 0
-        },
-        {
-            "fieldname": "valor_total",
-            "fieldtype": "Currency",
-            "label": "Valor Total",
-            "default": 0,
-            "in_list_view": 1
-        },
-        {
-            "fieldname": "column_break_totais",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "valor_icms",
-            "fieldtype": "Currency",
-            "label": "Valor ICMS",
-            "default": 0
-        },
-        {
-            "fieldname": "valor_pis",
-            "fieldtype": "Currency",
-            "label": "Valor PIS",
-            "default": 0
-        },
-        {
-            "fieldname": "valor_cofins",
-            "fieldtype": "Currency",
-            "label": "Valor COFINS",
-            "default": 0
-        },
-        {
-            "fieldname": "section_transporte",
-            "fieldtype": "Section Break",
-            "label": "Transporte e Volumes"
-        },
-        {
-            "fieldname": "transportadora",
-            "fieldtype": "Link",
-            "label": "Transportadora",
-            "options": "Supplier"
-        },
-        {
-            "fieldname": "placa_veiculo",
-            "fieldtype": "Data",
-            "label": "Placa do Veículo"
-        },
-        {
-            "fieldname": "uf_veiculo",
-            "fieldtype": "Data",
-            "label": "UF do Veículo"
-        },
-        {
-            "fieldname": "column_break_transp",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "quantidade_volumes",
-            "fieldtype": "Float",
-            "label": "Quantidade de Volumes",
-            "default": 0
-        },
-        {
-            "fieldname": "especie_volumes",
-            "fieldtype": "Data",
-            "label": "Espécie Volumes",
-            "default": "VOLUMES"
-        },
-        {
-            "fieldname": "peso_liquido",
-            "fieldtype": "Float",
-            "label": "Peso Líquido Total (kg)",
-            "precision": "3",
-            "default": 0
-        },
-        {
-            "fieldname": "peso_bruto",
-            "fieldtype": "Float",
-            "label": "Peso Bruto Total (kg)",
-            "precision": "3",
-            "default": 0
-        },
-        {
-            "fieldname": "section_itens",
-            "fieldtype": "Section Break",
-            "label": "Itens da Nota"
-        },
-        {
-            "fieldname": "itens",
-            "fieldtype": "Table",
-            "label": "Itens do Documento",
-            "options": "Item Documento Fiscal",
-            "reqd": 1
-        },
-        {
-            "fieldname": "section_sefaz",
-            "fieldtype": "Section Break",
-            "label": "Retorno SEFAZ"
-        },
-        {
-            "fieldname": "chave_acesso",
-            "fieldtype": "Data",
-            "label": "Chave de Acesso (44 dígitos)",
-            "read_only": 1,
-            "in_list_view": 1
-        },
-        {
-            "fieldname": "protocolo",
-            "fieldtype": "Data",
-            "label": "Protocolo",
-            "read_only": 1
-        },
-        {
-            "fieldname": "data_autorizacao",
-            "fieldtype": "Datetime",
-            "label": "Data Autorização",
-            "read_only": 1
-        },
-        {
-            "fieldname": "mensagem_sefaz",
-            "fieldtype": "Small Text",
-            "label": "Mensagem da SEFAZ",
-            "read_only": 1
-        },
-        {
-            "fieldname": "section_xmls",
-            "fieldtype": "Section Break",
-            "label": "XMLs Fiscais",
-            "collapsible": 1
-        },
-        {
-            "fieldname": "xml_autorizado",
-            "fieldtype": "Code",
-            "label": "XML Autorizado",
-            "read_only": 1,
-            "options": "XML"
-        },
-        {
-            "fieldname": "xml_assinado",
-            "fieldtype": "Code",
-            "label": "XML Assinado",
-            "read_only": 1,
-            "options": "XML"
-        },
-        {
-            "fieldname": "valor_icms_st",
-            "fieldtype": "Currency",
-            "label": "Valor ICMS-ST",
-            "default": 0
-        },
-        {
-            "fieldname": "valor_ipi",
-            "fieldtype": "Currency",
-            "label": "Valor IPI",
-            "default": 0
-        },
-        {
-            "fieldname": "section_reforma_dfe",
-            "fieldtype": "Section Break",
-            "label": "Reforma Tributária (IBS e CBS)"
-        },
-        {
-            "fieldname": "valor_ibs",
-            "fieldtype": "Currency",
-            "label": "Total IBS (Estadual/Municipal)",
-            "default": 0,
-            "read_only": 1,
-            "in_list_view": 1
-        },
-        {
-            "fieldname": "column_break_reforma_dfe",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "valor_cbs",
-            "fieldtype": "Currency",
-            "label": "Total CBS (Federal)",
-            "default": 0,
-            "read_only": 1,
-            "in_list_view": 1
-        },
-        {
-            "fieldname": "codigo_status_sefaz",
-            "fieldtype": "Data",
-            "label": "Código Status SEFAZ (cStat)",
-            "read_only": 1,
-            "in_list_view": 1
-        },
-        {
-            "fieldname": "motivo_rejeicao",
-            "fieldtype": "Small Text",
-            "label": "Motivo da Rejeição / Retorno SEFAZ",
-            "read_only": 1
-        },
-        {
-            "fieldname": "chave_nfe_referenciada",
-            "fieldtype": "Data",
-            "label": "Chave da NF-e Referenciada (Devolução / Complementar)",
-            "description": "Chave de 44 dígitos da nota de origem referenciada na tag <NFref>"
-        }
-    ],
-    "modified": "2026-09-16 12:00:00.000000",
-    "modified_by": "Administrator",
-    "module": "ERPZ Fiscal",
-    "name": "Documento Fiscal Eletronico",
-    "naming_rule": "Expression",
-    "owner": "Administrator",
-    "permissions": [
-        {
-            "role": "System Manager",
-            "read": 1,
-            "write": 1,
-            "create": 1,
-            "delete": 1
-        },
-        {
-            "role": "Fiscal Manager",
-            "read": 1,
-            "write": 1,
-            "create": 1,
-            "delete": 1
-        },
-        {
-            "role": "Fiscal User",
-            "read": 1,
-            "write": 1,
-            "create": 1,
-            "delete": 0
-        }
-    ],
-    "track_changes": 1
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:DFE-{YYYY}-{#####}",
+ "creation": "2026-09-16 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_identificacao",
+  "naming_series",
+  "modelo_fiscal",
+  "natureza_operacao",
+  "finalidade_emissao",
+  "empresa",
+  "numero_nota",
+  "serie",
+  "column_break_id",
+  "voucher_type",
+  "voucher_no",
+  "status",
+  "data_emissao",
+  "section_destinatario",
+  "destinatario_tipo",
+  "destinatario",
+  "destinatario_nome",
+  "destinatario_consumidor_final",
+  "destinatario_indicador_ie",
+  "destinatario_uf",
+  "destinatario_cpf_cnpj",
+  "destinatario_ie",
+  "section_valores",
+  "valor_produtos",
+  "valor_frete",
+  "valor_desconto",
+  "valor_total",
+  "total_difal_destino",
+  "total_fcp_destino",
+  "total_icms_desonerado",
+  "column_break_totais",
+  "valor_icms",
+  "valor_pis",
+  "valor_cofins",
+  "section_transporte",
+  "transportadora",
+  "placa_veiculo",
+  "uf_veiculo",
+  "column_break_transp",
+  "quantidade_volumes",
+  "especie_volumes",
+  "peso_liquido",
+  "peso_bruto",
+  "section_itens",
+  "itens",
+  "section_sefaz",
+  "codigo_status_sefaz",
+  "motivo_rejeicao",
+  "chave_nfe_referenciada",
+  "chave_acesso",
+  "protocolo",
+  "data_autorizacao",
+  "mensagem_sefaz",
+  "section_xmls",
+  "xml_autorizado",
+  "xml_assinado",
+  "valor_icms_st",
+  "valor_ipi",
+  "section_reforma_dfe",
+  "valor_ibs",
+  "column_break_reforma_dfe",
+  "valor_cbs",
+  "section_retencoes",
+  "reter_csrf",
+  "reter_irrf",
+  "reter_inss",
+  "column_break_ret_1",
+  "valor_retido_pis",
+  "valor_retido_cofins",
+  "valor_retido_csll",
+  "valor_retido_irrf",
+  "valor_retido_inss",
+  "total_retencoes_federais",
+  "valor_liquido_faturar"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_identificacao",
+   "fieldtype": "Section Break",
+   "label": "Identificação"
+  },
+  {
+   "default": "DFE-.YYYY.-.#####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Série",
+   "options": "DFE-.YYYY.-.#####"
+  },
+  {
+   "fieldname": "modelo_fiscal",
+   "fieldtype": "Select",
+   "label": "Modelo Fiscal",
+   "options": "55 - NF-e\n65 - NFC-e",
+   "default": "55 - NF-e",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "empresa",
+   "fieldtype": "Link",
+   "label": "Empresa",
+   "options": "Company",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "numero_nota",
+   "fieldtype": "Int",
+   "label": "Número da Nota",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "serie",
+   "fieldtype": "Int",
+   "label": "Série",
+   "default": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_id",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "voucher_type",
+   "fieldtype": "Select",
+   "label": "Documento de Origem",
+   "options": "Sales Invoice\nPOS Invoice\nPurchase Invoice\nManual",
+   "default": "Sales Invoice"
+  },
+  {
+   "fieldname": "voucher_no",
+   "fieldtype": "Dynamic Link",
+   "label": "Nº do Documento Origem",
+   "options": "voucher_type"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Rascunho\nValidado\nAssinado\nAutorizado\nCancelado\nRejeitado",
+   "default": "Rascunho",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "data_emissao",
+   "fieldtype": "Datetime",
+   "label": "Data Emissão"
+  },
+  {
+   "fieldname": "section_destinatario",
+   "fieldtype": "Section Break",
+   "label": "Destinatério"
+  },
+  {
+   "fieldname": "destinatario_tipo",
+   "fieldtype": "Select",
+   "label": "Tipo Destinatério",
+   "options": "Customer\nSupplier",
+   "default": "Customer"
+  },
+  {
+   "fieldname": "destinatario",
+   "fieldtype": "Dynamic Link",
+   "label": "Destinatério",
+   "options": "destinatario_tipo"
+  },
+  {
+   "fieldname": "destinatario_nome",
+   "fieldtype": "Data",
+   "label": "Nome Destinatério",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "destinatario_cpf_cnpj",
+   "fieldtype": "Data",
+   "label": "CPF/CNPJ Destinatério"
+  },
+  {
+   "fieldname": "destinatario_ie",
+   "fieldtype": "Data",
+   "label": "IE Destinatério"
+  },
+  {
+   "fieldname": "section_valores",
+   "fieldtype": "Section Break",
+   "label": "Valores e Impostos"
+  },
+  {
+   "fieldname": "valor_produtos",
+   "fieldtype": "Currency",
+   "label": "Valor dos Produtos",
+   "default": 0
+  },
+  {
+   "fieldname": "valor_frete",
+   "fieldtype": "Currency",
+   "label": "Valor do Frete",
+   "default": 0
+  },
+  {
+   "fieldname": "valor_desconto",
+   "fieldtype": "Currency",
+   "label": "Valor de Desconto",
+   "default": 0
+  },
+  {
+   "fieldname": "valor_total",
+   "fieldtype": "Currency",
+   "label": "Valor Total",
+   "default": 0,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_totais",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "valor_icms",
+   "fieldtype": "Currency",
+   "label": "Valor ICMS",
+   "default": 0
+  },
+  {
+   "fieldname": "valor_pis",
+   "fieldtype": "Currency",
+   "label": "Valor PIS",
+   "default": 0
+  },
+  {
+   "fieldname": "valor_cofins",
+   "fieldtype": "Currency",
+   "label": "Valor COFINS",
+   "default": 0
+  },
+  {
+   "fieldname": "section_transporte",
+   "fieldtype": "Section Break",
+   "label": "Transporte e Volumes"
+  },
+  {
+   "fieldname": "transportadora",
+   "fieldtype": "Link",
+   "label": "Transportadora",
+   "options": "Supplier"
+  },
+  {
+   "fieldname": "placa_veiculo",
+   "fieldtype": "Data",
+   "label": "Placa do Veículo"
+  },
+  {
+   "fieldname": "uf_veiculo",
+   "fieldtype": "Data",
+   "label": "UF do Veículo"
+  },
+  {
+   "fieldname": "column_break_transp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "quantidade_volumes",
+   "fieldtype": "Float",
+   "label": "Quantidade de Volumes",
+   "default": 0
+  },
+  {
+   "fieldname": "especie_volumes",
+   "fieldtype": "Data",
+   "label": "Espécie Volumes",
+   "default": "VOLUMES"
+  },
+  {
+   "fieldname": "peso_liquido",
+   "fieldtype": "Float",
+   "label": "Peso Líquido Total (kg)",
+   "precision": "3",
+   "default": 0
+  },
+  {
+   "fieldname": "peso_bruto",
+   "fieldtype": "Float",
+   "label": "Peso Bruto Total (kg)",
+   "precision": "3",
+   "default": 0
+  },
+  {
+   "fieldname": "section_itens",
+   "fieldtype": "Section Break",
+   "label": "Itens da Nota"
+  },
+  {
+   "fieldname": "itens",
+   "fieldtype": "Table",
+   "label": "Itens do Documento",
+   "options": "Item Documento Fiscal",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_sefaz",
+   "fieldtype": "Section Break",
+   "label": "Retorno SEFAZ"
+  },
+  {
+   "fieldname": "chave_acesso",
+   "fieldtype": "Data",
+   "label": "Chave de Acesso (44 dígitos)",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "protocolo",
+   "fieldtype": "Data",
+   "label": "Protocolo",
+   "read_only": 1
+  },
+  {
+   "fieldname": "data_autorizacao",
+   "fieldtype": "Datetime",
+   "label": "Data Autorização",
+   "read_only": 1
+  },
+  {
+   "fieldname": "mensagem_sefaz",
+   "fieldtype": "Small Text",
+   "label": "Mensagem da SEFAZ",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_xmls",
+   "fieldtype": "Section Break",
+   "label": "XMLs Fiscais",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "xml_autorizado",
+   "fieldtype": "Code",
+   "label": "XML Autorizado",
+   "read_only": 1,
+   "options": "XML"
+  },
+  {
+   "fieldname": "xml_assinado",
+   "fieldtype": "Code",
+   "label": "XML Assinado",
+   "read_only": 1,
+   "options": "XML"
+  },
+  {
+   "fieldname": "valor_icms_st",
+   "fieldtype": "Currency",
+   "label": "Valor ICMS-ST",
+   "default": 0
+  },
+  {
+   "fieldname": "valor_ipi",
+   "fieldtype": "Currency",
+   "label": "Valor IPI",
+   "default": 0
+  },
+  {
+   "fieldname": "section_reforma_dfe",
+   "fieldtype": "Section Break",
+   "label": "Reforma Tributária (IBS e CBS)"
+  },
+  {
+   "fieldname": "valor_ibs",
+   "fieldtype": "Currency",
+   "label": "Total IBS (Estadual/Municipal)",
+   "default": 0,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_reforma_dfe",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "valor_cbs",
+   "fieldtype": "Currency",
+   "label": "Total CBS (Federal)",
+   "default": 0,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "codigo_status_sefaz",
+   "fieldtype": "Data",
+   "label": "Código Status SEFAZ (cStat)",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "motivo_rejeicao",
+   "fieldtype": "Small Text",
+   "label": "Motivo da Rejeição / Retorno SEFAZ",
+   "read_only": 1
+  },
+  {
+   "fieldname": "chave_nfe_referenciada",
+   "fieldtype": "Data",
+   "label": "Chave da NF-e Referenciada (Devolução / Complementar)",
+   "description": "Chave de 44 dígitos da nota de origem referenciada na tag <NFref>"
+  },
+  {
+   "fieldname": "natureza_operacao",
+   "fieldtype": "Select",
+   "label": "Natureza da Operação",
+   "options": "Venda de Mercadorias\nRemessa para Conserto\nRetorno de Conserto\nRemessa para Industrialização\nRetorno de Industrialização\nCobrança de Mão de Obra e Insumos\nVenda para Entrega Futura\nRemessa em Entrega Futura\nRemessa em Bonificação / Brinde\nRemessa de Amostra Grátis\nDevolução de Mercadorias\nOutra Saída",
+   "default": "Venda de Mercadorias",
+   "insert_after": "modelo_fiscal"
+  },
+  {
+   "fieldname": "finalidade_emissao",
+   "fieldtype": "Select",
+   "label": "Finalidade da Emissão",
+   "options": "1 - Normal\n2 - Complementar\n3 - Ajuste\n4 - Devolução",
+   "default": "1 - Normal",
+   "insert_after": "natureza_operacao"
+  },
+  {
+   "fieldname": "destinatario_consumidor_final",
+   "fieldtype": "Check",
+   "label": "Consumidor Final (indFinal)",
+   "default": 1,
+   "insert_after": "destinatario_nome"
+  },
+  {
+   "fieldname": "destinatario_indicador_ie",
+   "fieldtype": "Select",
+   "label": "Indicador IE Destinatário",
+   "options": "1 - Contribuinte ICMS\n2 - Contribuinte Isento\n9 - Não Contribuinte",
+   "default": "9 - Não Contribuinte",
+   "insert_after": "destinatario_consumidor_final"
+  },
+  {
+   "fieldname": "destinatario_uf",
+   "fieldtype": "Data",
+   "label": "UF Destino",
+   "default": "SP",
+   "insert_after": "destinatario_indicador_ie"
+  },
+  {
+   "fieldname": "total_difal_destino",
+   "fieldtype": "Currency",
+   "label": "Total DIFAL UF Destino",
+   "read_only": 1,
+   "insert_after": "valor_total"
+  },
+  {
+   "fieldname": "total_fcp_destino",
+   "fieldtype": "Currency",
+   "label": "Total FCP UF Destino",
+   "read_only": 1,
+   "insert_after": "total_difal_destino"
+  },
+  {
+   "fieldname": "total_icms_desonerado",
+   "fieldtype": "Currency",
+   "label": "Total ICMS Desonerado",
+   "read_only": 1,
+   "insert_after": "total_fcp_destino"
+  },
+  {
+   "fieldname": "section_retencoes",
+   "fieldtype": "Section Break",
+   "label": "Retenções Federais na Fonte (CSRF / IRRF / INSS)",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "reter_csrf",
+   "fieldtype": "Check",
+   "label": "Aplicar Retenção CSRF (PIS/COFINS/CSLL 4,65%)",
+   "default": 0
+  },
+  {
+   "fieldname": "reter_irrf",
+   "fieldtype": "Check",
+   "label": "Aplicar Retenção de IRRF (1,50%)",
+   "default": 0
+  },
+  {
+   "fieldname": "reter_inss",
+   "fieldtype": "Check",
+   "label": "Aplicar Retenção de INSS (11,00%)",
+   "default": 0
+  },
+  {
+   "fieldname": "column_break_ret_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "valor_retido_pis",
+   "fieldtype": "Currency",
+   "label": "PIS Retido (0,65%)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_retido_cofins",
+   "fieldtype": "Currency",
+   "label": "COFINS Retido (3,00%)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_retido_csll",
+   "fieldtype": "Currency",
+   "label": "CSLL Retido (1,00%)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_retido_irrf",
+   "fieldtype": "Currency",
+   "label": "IRRF Retido (1,50%)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_retido_inss",
+   "fieldtype": "Currency",
+   "label": "INSS Retido (11,00%)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_retencoes_federais",
+   "fieldtype": "Currency",
+   "label": "Total Retenções Federais",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_liquido_faturar",
+   "fieldtype": "Currency",
+   "label": "Valor Líquido a Pagar / Faturar",
+   "read_only": 1
+  }
+ ],
+ "modified": "2026-09-16 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPZ Fiscal",
+ "name": "Documento Fiscal Eletronico",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "Fiscal Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "Fiscal User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0
+  }
+ ],
+ "track_changes": 1
 }

@@ -1,4 +1,22 @@
 frappe.ui.form.on('Documento Fiscal Eletronico', {
+    
+    reter_csrf: function(frm) { frm.trigger('recalcular_totais_client'); },
+    reter_irrf: function(frm) { frm.trigger('recalcular_totais_client'); },
+    reter_inss: function(frm) { frm.trigger('recalcular_totais_client'); },
+    destinatario_uf: function(frm) { frm.trigger('recalcular_totais_client'); },
+    destinatario_consumidor_final: function(frm) { frm.trigger('recalcular_totais_client'); },
+    destinatario_indicador_ie: function(frm) { frm.trigger('recalcular_totais_client'); },
+
+    recalcular_totais_client: function(frm) {
+        frm.call({
+            method: 'calcular_totais',
+            doc: frm.doc,
+            callback: function() {
+                frm.refresh_fields();
+            }
+        });
+    },
+
     refresh: function(frm) {
         if (!frm.is_new() && frm.doc.status === 'Rejeitado') {
             let cod = frm.doc.codigo_status_sefaz || '';
