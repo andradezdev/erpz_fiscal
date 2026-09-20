@@ -121,37 +121,11 @@ def get_custom_fields():
         ],
         "Sales Order": [
             {
-                "fieldname": "erpz_transporte_section",
-                "label": "Volumes e Pesos da Carga",
+                "fieldname": "erpz_fiscal_section_so",
+                "label": "Dados Fiscais NF-e",
                 "fieldtype": "Section Break",
                 "insert_after": "terms",
                 "collapsible": 1
-            },
-            {
-                "fieldname": "volumes",
-                "label": "Volumes",
-                "fieldtype": "Float",
-                "default": "1",
-                "insert_after": "erpz_transporte_section"
-            },
-            {
-                "fieldname": "column_break_transp_so",
-                "fieldtype": "Column Break",
-                "insert_after": "volumes"
-            },
-            {
-                "fieldname": "peso_liquido",
-                "label": "Peso Líquido Total (kg)",
-                "fieldtype": "Float",
-                "precision": "3",
-                "insert_after": "column_break_transp_so"
-            },
-            {
-                "fieldname": "peso_bruto",
-                "label": "Peso Bruto Total (kg)",
-                "fieldtype": "Float",
-                "precision": "3",
-                "insert_after": "peso_liquido"
             },
             {
                 "fieldname": "documento_fiscal",
@@ -159,7 +133,7 @@ def get_custom_fields():
                 "fieldtype": "Link",
                 "options": "Documento Fiscal Eletronico",
                 "read_only": 1,
-                "insert_after": "peso_bruto"
+                "insert_after": "erpz_fiscal_section_so"
             },
             {
                 "fieldname": "numero_nfe",

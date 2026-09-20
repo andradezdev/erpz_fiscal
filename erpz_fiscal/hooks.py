@@ -25,9 +25,6 @@ doctype_js = {
 
 # Document Events
 doc_events = {
-    "Sales Order": {
-        "validate": "erpz_fiscal.api.nfe.calcular_pesos_sales_order"
-    },
     "Sales Invoice": {
         "on_cancel": "erpz_fiscal.api.nfe.validar_cancelamento_fatura"
     },
