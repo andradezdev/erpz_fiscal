@@ -489,3 +489,24 @@ def sincronizar_mde_sefaz(empresa=None):
     except Exception as e:
         frappe.log_error(f"Erro sincronizacao MDe SEFAZ: {str(e)}")
         raise e
+
+
+@frappe.whitelist()
+def baixar_arquivo_sped_fiscal_txt(empresa=None, from_date=None, to_date=None, gerar_bloco_k=1):
+    """Gera e retorna o conteúdo do arquivo TXT do SPED Fiscal EFD ICMS/IPI formatado para o PVA"""
+    from erpz_fiscal.erpz_fiscal.report.sped_fiscal_efd_icms_ipi.sped_fiscal_efd_icms_ipi import execute
+    cols, data = execute({
+        "empresa": empresa,
+        "from_date": from_date,
+        "to_date": to_date,
+        "gerar_bloco_k": gerar_bloco_k,
+        "filtrar_bloco": "Todos os Blocos"
+    })
+    txt_content = "\r\n".join([d["linha"] for d in data]) + "\r\n"
+    dt_ref = str(to_date or "20260930").replace("-", "")
+    nome_arquivo = f"SPED_FISCAL_{empresa or 'EMPRESA'}_{dt_ref}.txt"
+    return {
+        "success": True,
+        "conteudo_txt": txt_content,
+        "nome_arquivo": nome_arquivo
+    }
