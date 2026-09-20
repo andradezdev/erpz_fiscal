@@ -1,16 +1,62 @@
-$(document).on("toolbar_setup", function() {
+// Sincronização automática do layout de desktop para garantir que novos módulos apareçam
+function ensure_desktop_layout_sync() {
     try {
-        if (!localStorage.getItem("erpz_desktop_cache_v3")) {
-            localStorage.removeItem("Administrator:desktop");
-            if (window.frappe && frappe.session && frappe.session.user) {
-                localStorage.removeItem(frappe.session.user + ":desktop");
-            }
-            localStorage.setItem("erpz_desktop_cache_v3", "1");
-            if (window.frappe && frappe.pages && frappe.pages["desktop"] && frappe.pages["desktop"].desktop_page) {
-                frappe.pages["desktop"].desktop_page.update();
+        const user = (window.frappe && frappe.session && frappe.session.user) ? frappe.session.user : "Administrator";
+        const key = user + ":desktop";
+        const raw = localStorage.getItem(key);
+        if (raw) {
+            let layout = JSON.parse(raw);
+            if (Array.isArray(layout)) {
+                const hasContabil = layout.some(i => (i.label === "ERPZ Contabil" || i.name === "ERPZ Contabil"));
+                if (!hasContabil) {
+                    console.log("[ERPZ] Atualizando layout do Desk em localStorage para incluir ERPZ Contabil...");
+                    const contabilItem = {
+                        label: "ERPZ Contabil",
+                        bg_color: "gray",
+                        link: null,
+                        link_type: "Workspace Sidebar",
+                        app: "erpz_contabil",
+                        icon_type: "Link",
+                        parent_icon: "",
+                        icon: "calculator",
+                        link_to: "ERPZ Contabil",
+                        idx: 10,
+                        standard: 1,
+                        logo_url: null,
+                        hidden: 0,
+                        name: "ERPZ Contabil",
+                        restrict_removal: 0,
+                        icon_image: null
+                    };
+                    const idxT = layout.findIndex(i => (i.label === "ERPZ Transporte" || i.name === "ERPZ Transporte"));
+                    if (idxT !== -1) {
+                        layout.splice(idxT + 1, 0, contabilItem);
+                    } else {
+                        layout.push(contabilItem);
+                    }
+                    localStorage.setItem(key, JSON.stringify(layout));
+                    if (window.frappe && frappe.desktop_icons && Array.isArray(frappe.desktop_icons)) {
+                        frappe.desktop_icons = layout;
+                    }
+                    if (window.frappe && frappe.pages && frappe.pages["desktop"] && frappe.pages["desktop"].desktop_page) {
+                        frappe.pages["desktop"].desktop_page.data = null;
+                        frappe.pages["desktop"].desktop_page.update();
+                    }
+                }
             }
         }
-    } catch(e) {}
+    } catch(e) {
+        console.warn("[ERPZ] sync layout warning:", e);
+    }
+}
+
+$(document).on("toolbar_setup", function() {
+    ensure_desktop_layout_sync();
+});
+
+$(document).on("page-change", function() {
+    ensure_desktop_layout_sync();
+    setTimeout(ensure_nfce_pos_buttons, 200);
 });
 
 function print_last_nfce_cupom() {
@@ -94,7 +140,3 @@ function ensure_nfce_pos_buttons() {
 
 // Observador contínuo na tela do PDV a cada 300ms
 setInterval(ensure_nfce_pos_buttons, 300);
-
-$(document).on("page-change", function() {
-    setTimeout(ensure_nfce_pos_buttons, 200);
-});
