@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "autoname": "format:MAP-{supplier}-{codigo_fornecedor}",
+ "creation": "2026-09-20 01:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier",
+  "codigo_fornecedor",
+  "descricao_fornecedor",
+  "uom_fornecedor",
+  "column_break_1",
+  "item_code",
+  "item_name",
+  "fator_conversao",
+  "uom_estoque",
+  "cfop_padrao_entrada"
+ ],
+ "fields": [
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Fornecedor",
+   "options": "Supplier",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "codigo_fornecedor",
+   "fieldtype": "Data",
+   "label": "Código no Fornecedor (cProd)",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "descricao_fornecedor",
+   "fieldtype": "Data",
+   "label": "Descrição no Fornecedor (xProd)",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "uom_fornecedor",
+   "fieldtype": "Data",
+   "label": "Unidade Fornecedor (uCom)"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Interno (ERPNext)",
+   "options": "Item",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Nome do Item Interno",
+   "fetch_from": "item_code.item_name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "fator_conversao",
+   "fieldtype": "Float",
+   "label": "Fator de Conversão",
+   "default": "1.0",
+   "description": "Multiplicador para a unidade de estoque (Ex: 1 CX com 12 UN = Fator 12.0)"
+  },
+  {
+   "fieldname": "uom_estoque",
+   "fieldtype": "Link",
+   "label": "Unidade de Estoque",
+   "options": "UOM",
+   "fetch_from": "item_code.stock_uom",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cfop_padrao_entrada",
+   "fieldtype": "Data",
+   "label": "CFOP Padrão de Entrada",
+   "description": "Ex: 1102 (Comercialização) ou 1101 (Industrialização)"
+  }
+ ],
+ "modified": "2026-09-20 01:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPZ Fiscal",
+ "name": "Mapeamento Item Fornecedor",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "Fiscal Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "Purchase User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0
+  }
+ ],
+ "track_changes": 1
+}

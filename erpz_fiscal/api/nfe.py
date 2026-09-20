@@ -399,3 +399,93 @@ def emitir_nfce_pos_invoice(pos_invoice):
             "status": "Rejeitado",
             "mensagem": str(e).replace("<", "&lt;").replace(">", "&gt;")
         }
+
+
+@frappe.whitelist()
+def sincronizar_mde_sefaz(empresa=None):
+    """Consulta a SEFAZ Nacional via WebService NFeDistribuicaoDFe e sincroniza notas emitidas contra o CNPJ"""
+    from erpz_fiscal.api.nfe import get_sefaz_client
+    import base64, gzip
+    from lxml import etree
+
+    nfe_client, amb_label, cert_doc = get_sefaz_client(empresa)
+    cnpj_autor = cert_doc.cnpj_certificado or "18594769000140"
+    tp_amb = "1" if "Produção" in amb_label else "2"
+
+    ultimo_nsu = frappe.db.sql("""
+        SELECT MAX(CAST(nsu AS UNSIGNED)) FROM `tabManifestacao Destinatario NFe`
+        WHERE empresa = %s AND nsu IS NOT NULL AND nsu != ''
+    """, (cert_doc.empresa,))[0][0] or 0
+
+    ult_nsu_str = str(ultimo_nsu).zfill(15)
+
+    dist_xml = f"""<distDFeInt xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.01">
+  <tpAmb>{tp_amb}</tpAmb>
+  <cUFAutor>35</cUFAutor>
+  <CNPJ>{cnpj_autor}</CNPJ>
+  <distNSU>
+    <ultNSU>{ult_nsu_str}</ultNSU>
+  </distNSU>
+</distDFeInt>"""
+
+    endpoint = "https://hom.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl" if tp_amb == "2" else "https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx?wsdl"
+    trans = nfe_client._transmissao
+
+    novas_notas = 0
+    try:
+        with trans.cliente(endpoint):
+            etree_doc = etree.fromstring(dist_xml.encode("utf-8"))
+            res = trans.enviar("nfeDistDFeInteresse", etree_doc)
+            xml_res = res.text if hasattr(res, "text") else str(res)
+
+            ret_root = etree.fromstring(xml_res.encode("utf-8") if isinstance(xml_res, str) else xml_res)
+            ns = {"nfe": "http://www.portalfiscal.inf.br/nfe"}
+
+            cstat = ret_root.findtext(".//nfe:cStat", namespaces=ns) or ret_root.findtext(".//cStat")
+            xmotivo = ret_root.findtext(".//nfe:xMotivo", namespaces=ns) or ret_root.findtext(".//xMotivo")
+
+            docs_zip = ret_root.findall(".//nfe:docZip", ns) or ret_root.findall(".//docZip")
+            for dz in docs_zip:
+                schema = dz.get("schema", "")
+                if dz.text:
+                    gz_bytes = base64.b64decode(dz.text)
+                    doc_unzipped = gzip.decompress(gz_bytes).decode("utf-8", errors="ignore")
+                    doc_root = etree.fromstring(doc_unzipped.encode("utf-8"))
+                    for elem in doc_root.getiterator():
+                        if not hasattr(elem.tag, "find"):
+                            continue
+                        i = elem.tag.find("}")
+                        if i >= 0:
+                            elem.tag = elem.tag[i + 1:]
+
+                    if "resNFe" in schema or doc_root.tag == "resNFe":
+                        ch = doc_root.findtext("chNFe")
+                        if ch and not frappe.db.exists("Manifestacao Destinatario NFe", {"chave_acesso": ch}):
+                            mde = frappe.new_doc("Manifestacao Destinatario NFe")
+                            mde.empresa = cert_doc.empresa
+                            mde.chave_acesso = ch
+                            mde.cnpj_emitente = doc_root.findtext("CNPJ") or doc_root.findtext("CPF") or ""
+                            mde.nome_emitente = doc_root.findtext("xNome") or ""
+                            mde.valor_total = flt(doc_root.findtext("vNF"))
+                            dh_emi = doc_root.findtext("dhEmi")
+                            if dh_emi:
+                                mde.data_emissao = dh_emi[:19].replace("T", " ")
+                            if len(ch) >= 34:
+                                mde.serie = cint(ch[22:25])
+                                mde.numero_nota = cint(ch[25:34])
+                            mde.nsu = dz.get("NSU")
+                            mde.situacao_manifestacao = "Sem Manifestação"
+                            mde.insert(ignore_permissions=True)
+                            novas_notas += 1
+
+            frappe.db.commit()
+            return {
+                "success": True,
+                "cStat": cstat,
+                "xMotivo": xmotivo,
+                "novas_notas": novas_notas,
+                "ultimo_nsu": ult_nsu_str
+            }
+    except Exception as e:
+        frappe.log_error(f"Erro sincronizacao MDe SEFAZ: {str(e)}")
+        raise e

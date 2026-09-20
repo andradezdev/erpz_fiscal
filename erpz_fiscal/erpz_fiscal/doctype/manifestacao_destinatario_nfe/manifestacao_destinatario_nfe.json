@@ -1,0 +1,193 @@
+{
+ "actions": [],
+ "autoname": "format:MDE-{empresa}-{chave_acesso}",
+ "creation": "2026-09-20 01:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "empresa",
+  "chave_acesso",
+  "numero_nota",
+  "serie",
+  "data_emissao",
+  "column_break_mde_1",
+  "cnpj_emitente",
+  "nome_emitente",
+  "valor_total",
+  "nsu",
+  "section_status_manifestacao",
+  "situacao_manifestacao",
+  "protocolo_manifestacao",
+  "data_manifestacao",
+  "mensagem_sefaz",
+  "column_break_mde_2",
+  "tem_xml_completo",
+  "arquivo_xml",
+  "importacao_gerada",
+  "section_xml_mde",
+  "xml_conteudo"
+ ],
+ "fields": [
+  {
+   "fieldname": "empresa",
+   "fieldtype": "Link",
+   "label": "Empresa",
+   "options": "Company",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "chave_acesso",
+   "fieldtype": "Data",
+   "label": "Chave de Acesso (44 dígitos)",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "numero_nota",
+   "fieldtype": "Int",
+   "label": "Número da Nota",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "serie",
+   "fieldtype": "Int",
+   "label": "Série"
+  },
+  {
+   "fieldname": "data_emissao",
+   "fieldtype": "Datetime",
+   "label": "Data de Emissão",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_mde_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cnpj_emitente",
+   "fieldtype": "Data",
+   "label": "CNPJ do Emitente",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "nome_emitente",
+   "fieldtype": "Data",
+   "label": "Razão Social do Emitente",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "valor_total",
+   "fieldtype": "Currency",
+   "label": "Valor Total",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "nsu",
+   "fieldtype": "Data",
+   "label": "NSU na SEFAZ",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_status_manifestacao",
+   "fieldtype": "Section Break",
+   "label": "Manifestação do Destinatário na SEFAZ"
+  },
+  {
+   "fieldname": "situacao_manifestacao",
+   "fieldtype": "Select",
+   "label": "Situação da Manifestação",
+   "options": "Sem Manifestação\nCiência da Emissão (210210)\nConfirmação da Operação (210200)\nDesconhecimento da Operação (210220)\nOperação não Realizada (210240)",
+   "default": "Sem Manifestação",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "protocolo_manifestacao",
+   "fieldtype": "Data",
+   "label": "Protocolo do Evento",
+   "read_only": 1
+  },
+  {
+   "fieldname": "data_manifestacao",
+   "fieldtype": "Datetime",
+   "label": "Data da Manifestação",
+   "read_only": 1
+  },
+  {
+   "fieldname": "mensagem_sefaz",
+   "fieldtype": "Data",
+   "label": "Mensagem da SEFAZ",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mde_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tem_xml_completo",
+   "fieldtype": "Check",
+   "label": "XML Completo Baixado da SEFAZ",
+   "default": 0,
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "arquivo_xml",
+   "fieldtype": "Attach",
+   "label": "Arquivo XML Baixado",
+   "read_only": 1
+  },
+  {
+   "fieldname": "importacao_gerada",
+   "fieldtype": "Link",
+   "label": "Importação de Compra Vinculada",
+   "options": "Importacao NFe Compra",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_xml_mde",
+   "fieldtype": "Section Break",
+   "label": "Conteúdo do XML",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "xml_conteudo",
+   "fieldtype": "Code",
+   "label": "XML Baixado",
+   "options": "XML",
+   "read_only": 1
+  }
+ ],
+ "modified": "2026-09-20 01:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPZ Fiscal",
+ "name": "Manifestacao Destinatario NFe",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "Fiscal Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "Purchase User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0
+  }
+ ],
+ "track_changes": 1
+}

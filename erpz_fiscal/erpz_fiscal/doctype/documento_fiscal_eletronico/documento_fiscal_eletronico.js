@@ -19,6 +19,74 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
             }).addClass('btn-primary');
         }
 
+        
+        if (!frm.is_new() && frm.doc.status === 'Autorizado') {
+            frm.add_custom_button(__('Cancelar NF-e na SEFAZ'), function() {
+                frappe.prompt(
+                    {
+                        fieldname: 'justificativa',
+                        fieldtype: 'Small Text',
+                        label: __('Justificativa do Cancelamento (Mínimo 15 caracteres)'),
+                        reqd: 1
+                    },
+                    function(values) {
+                        frappe.dom.freeze(__('Enviando evento de cancelamento para a SEFAZ...'));
+                        frm.call({
+                            method: 'cancelar_documento_sefaz',
+                            doc: frm.doc,
+                            args: { justificativa: values.justificativa },
+                            callback: function(r) {
+                                frappe.dom.unfreeze();
+                                frm.reload_doc();
+                                if (r.message && r.message.success) {
+                                    frappe.msgprint({
+                                        title: __('Cancelamento Homologado pela SEFAZ'),
+                                        indicator: 'green',
+                                        message: `<b>Status:</b> ${r.message.xMotivo}<br><b>Protocolo:</b> ${r.message.protocolo}`
+                                    });
+                                }
+                            }
+                        });
+                    },
+                    __('Cancelar Documento Fiscal na SEFAZ'),
+                    __('Confirmar Cancelamento')
+                );
+            }, __('Ações SEFAZ'));
+
+            frm.add_custom_button(__('Carta de Correção (CC-e)'), function() {
+                frappe.prompt(
+                    {
+                        fieldname: 'texto_correcao',
+                        fieldtype: 'Small Text',
+                        label: __('Texto da Correção (15 a 1000 caracteres)'),
+                        description: __('A CC-e não pode alterar valores, alíquotas, impostos, data de emissão ou dados do destinatário.'),
+                        reqd: 1
+                    },
+                    function(values) {
+                        frappe.dom.freeze(__('Transmitindo Carta de Correção para a SEFAZ...'));
+                        frm.call({
+                            method: 'emitir_cce_sefaz',
+                            doc: frm.doc,
+                            args: { texto_correcao: values.texto_correcao },
+                            callback: function(r) {
+                                frappe.dom.unfreeze();
+                                frm.reload_doc();
+                                if (r.message && r.message.success) {
+                                    frappe.msgprint({
+                                        title: __('Carta de Correção Homologada'),
+                                        indicator: 'green',
+                                        message: `<b>Status:</b> ${r.message.xMotivo}<br><b>Sequencial:</b> ${r.message.sequencial}<br><b>Protocolo:</b> ${r.message.protocolo}`
+                                    });
+                                }
+                            }
+                        });
+                    },
+                    __('Emitir Carta de Correção Eletrônica (CC-e)'),
+                    __('Transmitir CC-e')
+                );
+            }, __('Ações SEFAZ'));
+        }
+
         if (!frm.is_new() && frm.doc.chave_acesso) {
             frm.add_custom_button(__('Consultar Situação na SEFAZ'), function() {
                 frappe.dom.freeze(__('Consultando situação do documento fiscal na SEFAZ...'));

@@ -47,6 +47,7 @@
         "section_sefaz",
         "codigo_status_sefaz",
         "motivo_rejeicao",
+        "chave_nfe_referenciada",
         "chave_acesso",
         "protocolo",
         "data_autorizacao",
@@ -387,6 +388,12 @@
             "fieldtype": "Small Text",
             "label": "Motivo da Rejeição / Retorno SEFAZ",
             "read_only": 1
+        },
+        {
+            "fieldname": "chave_nfe_referenciada",
+            "fieldtype": "Data",
+            "label": "Chave da NF-e Referenciada (Devolução / Complementar)",
+            "description": "Chave de 44 dígitos da nota de origem referenciada na tag <NFref>"
         }
     ],
     "modified": "2026-09-16 12:00:00.000000",

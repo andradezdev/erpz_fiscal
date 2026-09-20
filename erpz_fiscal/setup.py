@@ -1,3 +1,4 @@
+import json, os
 import frappe
 
 def setup_desktop_and_sidebar():
@@ -30,6 +31,23 @@ def setup_desktop_and_sidebar():
         new_icon.app = "erpz_fiscal"
         new_icon.idx = 8
         new_icon.insert(ignore_permissions=True)
+    # Sync Workspace Sidebar
+    sb_file = "/home/frappe/frappe-bench/apps/erpz_fiscal/erpz_fiscal/workspace_sidebar/erpz_fiscal.json"
+    if os.path.exists(sb_file):
+        with open(sb_file, "r", encoding="utf-8") as fp:
+            sb_data = json.load(fp)
+
+        if frappe.db.exists("Workspace Sidebar", "ERPZ Fiscal"):
+            sb = frappe.get_doc("Workspace Sidebar", "ERPZ Fiscal")
+            sb.items = []
+            for it in sb_data.get("items", []):
+                sb.append("items", it)
+            sb.save(ignore_permissions=True)
+        else:
+            sb = frappe.new_doc("Workspace Sidebar")
+            sb.update(sb_data)
+            sb.insert(ignore_permissions=True)
+
 
 def after_install():
     create_roles()

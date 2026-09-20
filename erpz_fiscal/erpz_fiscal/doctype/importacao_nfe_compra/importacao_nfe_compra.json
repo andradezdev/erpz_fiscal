@@ -1,0 +1,312 @@
+{
+ "actions": [],
+ "autoname": "format:IMP-NFE-{YYYY}-{#####}",
+ "creation": "2026-09-20 01:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_arquivo",
+  "arquivo_xml",
+  "empresa",
+  "deposito_padrao",
+  "column_break_arq",
+  "status",
+  "tipo_operacao_padrao",
+  "section_cabecalho",
+  "chave_acesso",
+  "numero_nota",
+  "serie",
+  "data_emissao",
+  "column_break_emit",
+  "supplier",
+  "fornecedor_cnpj",
+  "fornecedor_nome",
+  "fornecedor_ie",
+  "fornecedor_uf",
+  "section_itens",
+  "itens",
+  "section_totais",
+  "valor_produtos",
+  "valor_frete",
+  "valor_seguro",
+  "valor_desconto",
+  "valor_outras_despesas",
+  "valor_total_nota",
+  "column_break_tot_imp",
+  "total_icms",
+  "total_st",
+  "total_ipi",
+  "total_pis",
+  "total_cofins",
+  "section_documentos_gerados",
+  "purchase_receipt",
+  "purchase_invoice",
+  "section_xml_raw",
+  "xml_completo"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_arquivo",
+   "fieldtype": "Section Break",
+   "label": "Upload e Origem do XML"
+  },
+  {
+   "fieldname": "arquivo_xml",
+   "fieldtype": "Attach",
+   "label": "Arquivo XML da NF-e",
+   "reqd": 1
+  },
+  {
+   "fieldname": "empresa",
+   "fieldtype": "Link",
+   "label": "Empresa",
+   "options": "Company",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "deposito_padrao",
+   "fieldtype": "Link",
+   "label": "Depósito Padrão de Entrada",
+   "options": "Warehouse",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_arq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pendente\nValidada\nEstoque Recebido\nFaturada\nConcluída",
+   "default": "Pendente",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "tipo_operacao_padrao",
+   "fieldtype": "Select",
+   "label": "Finalidade Padrão de Entrada",
+   "options": "Compra para Comercialização / Revenda (1.102/2.102)\nCompra para Industrialização (1.101/2.101)\nUso e Consumo (1.556/2.556)\nAtivo Imobilizado (1.551/2.551)",
+   "default": "Compra para Comercialização / Revenda (1.102/2.102)"
+  },
+  {
+   "fieldname": "section_cabecalho",
+   "fieldtype": "Section Break",
+   "label": "Identificação da Nota Fiscal de Compra"
+  },
+  {
+   "fieldname": "chave_acesso",
+   "fieldtype": "Data",
+   "label": "Chave de Acesso (44 dígitos)",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "numero_nota",
+   "fieldtype": "Int",
+   "label": "Número da Nota",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "serie",
+   "fieldtype": "Int",
+   "label": "Série",
+   "read_only": 1
+  },
+  {
+   "fieldname": "data_emissao",
+   "fieldtype": "Datetime",
+   "label": "Data de Emissão",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_emit",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Fornecedor (ERPNext)",
+   "options": "Supplier",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "fornecedor_cnpj",
+   "fieldtype": "Data",
+   "label": "CNPJ Fornecedor",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fornecedor_nome",
+   "fieldtype": "Data",
+   "label": "Razão Social Fornecedor",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fornecedor_ie",
+   "fieldtype": "Data",
+   "label": "Inscrição Estadual Fornecedor",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fornecedor_uf",
+   "fieldtype": "Data",
+   "label": "UF Fornecedor",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_itens",
+   "fieldtype": "Section Break",
+   "label": "Itens da Nota Fiscal e De-Para de Produtos"
+  },
+  {
+   "fieldname": "itens",
+   "fieldtype": "Table",
+   "label": "Itens do XML",
+   "options": "Item Importacao NFe Compra"
+  },
+  {
+   "fieldname": "section_totais",
+   "fieldtype": "Section Break",
+   "label": "Totais e Impostos da NF-e"
+  },
+  {
+   "fieldname": "valor_produtos",
+   "fieldtype": "Currency",
+   "label": "Valor dos Produtos",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_frete",
+   "fieldtype": "Currency",
+   "label": "Valor do Frete",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_seguro",
+   "fieldtype": "Currency",
+   "label": "Valor do Seguro",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_desconto",
+   "fieldtype": "Currency",
+   "label": "Valor do Desconto",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_outras_despesas",
+   "fieldtype": "Currency",
+   "label": "Outras Despesas",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_total_nota",
+   "fieldtype": "Currency",
+   "label": "Valor Total da Nota",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_tot_imp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_icms",
+   "fieldtype": "Currency",
+   "label": "Total ICMS",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_st",
+   "fieldtype": "Currency",
+   "label": "Total ICMS-ST",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_ipi",
+   "fieldtype": "Currency",
+   "label": "Total IPI",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_pis",
+   "fieldtype": "Currency",
+   "label": "Total PIS",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_cofins",
+   "fieldtype": "Currency",
+   "label": "Total COFINS",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_documentos_gerados",
+   "fieldtype": "Section Break",
+   "label": "Documentos Oficiais Gerados no ERPNext"
+  },
+  {
+   "fieldname": "purchase_receipt",
+   "fieldtype": "Link",
+   "label": "Entrada de Estoque (Purchase Receipt)",
+   "options": "Purchase Receipt",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purchase_invoice",
+   "fieldtype": "Link",
+   "label": "Fatura de Compra (Purchase Invoice)",
+   "options": "Purchase Invoice",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_xml_raw",
+   "fieldtype": "Section Break",
+   "label": "XML Completo",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "xml_completo",
+   "fieldtype": "Code",
+   "label": "XML da NF-e",
+   "options": "XML",
+   "read_only": 1
+  }
+ ],
+ "modified": "2026-09-20 01:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPZ Fiscal",
+ "name": "Importacao NFe Compra",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "Fiscal Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "Purchase User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 0
+  }
+ ],
+ "track_changes": 1
+}

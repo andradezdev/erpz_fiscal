@@ -1,0 +1,189 @@
+{
+ "actions": [],
+ "creation": "2026-09-20 01:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "istable": 1,
+ "field_order": [
+  "codigo_fornecedor",
+  "descricao_fornecedor",
+  "ncm",
+  "cfop_origem",
+  "cfop_entrada",
+  "unidade_fornecedor",
+  "quantidade_fornecedor",
+  "valor_unitario",
+  "valor_total",
+  "column_break_depara",
+  "item_code",
+  "item_name",
+  "fator_conversao",
+  "quantidade_estoque",
+  "unidade_estoque",
+  "warehouse",
+  "section_impostos",
+  "valor_icms",
+  "aliquota_icms",
+  "valor_icms_st",
+  "valor_ipi",
+  "valor_pis",
+  "valor_cofins"
+ ],
+ "fields": [
+  {
+   "fieldname": "codigo_fornecedor",
+   "fieldtype": "Data",
+   "label": "Código no Fornecedor (cProd)",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "descricao_fornecedor",
+   "fieldtype": "Data",
+   "label": "Descrição no Fornecedor (xProd)",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "ncm",
+   "fieldtype": "Data",
+   "label": "NCM",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cfop_origem",
+   "fieldtype": "Data",
+   "label": "CFOP Saída",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "cfop_entrada",
+   "fieldtype": "Data",
+   "label": "CFOP Entrada",
+   "in_list_view": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "unidade_fornecedor",
+   "fieldtype": "Data",
+   "label": "Unidade",
+   "read_only": 1
+  },
+  {
+   "fieldname": "quantidade_fornecedor",
+   "fieldtype": "Float",
+   "label": "Qtd NF",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_unitario",
+   "fieldtype": "Currency",
+   "label": "Valor Unit.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_total",
+   "fieldtype": "Currency",
+   "label": "Valor Total",
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_depara",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Interno (ERPNext)",
+   "options": "Item",
+   "in_list_view": 1,
+   "reqd": 0
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "label": "Nome do Item Interno",
+   "fetch_from": "item_code.item_name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fator_conversao",
+   "fieldtype": "Float",
+   "label": "Fator Conversão",
+   "default": "1.0"
+  },
+  {
+   "fieldname": "quantidade_estoque",
+   "fieldtype": "Float",
+   "label": "Qtd Estoque",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "unidade_estoque",
+   "fieldtype": "Link",
+   "label": "Unidade Estoque",
+   "options": "UOM",
+   "fetch_from": "item_code.stock_uom"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Depósito de Entrada",
+   "options": "Warehouse",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_impostos",
+   "fieldtype": "Section Break",
+   "label": "Impostos da Linha",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "valor_icms",
+   "fieldtype": "Currency",
+   "label": "Valor ICMS",
+   "read_only": 1
+  },
+  {
+   "fieldname": "aliquota_icms",
+   "fieldtype": "Percent",
+   "label": "% ICMS",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_icms_st",
+   "fieldtype": "Currency",
+   "label": "Valor ICMS-ST",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_ipi",
+   "fieldtype": "Currency",
+   "label": "Valor IPI",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_pis",
+   "fieldtype": "Currency",
+   "label": "Valor PIS",
+   "read_only": 1
+  },
+  {
+   "fieldname": "valor_cofins",
+   "fieldtype": "Currency",
+   "label": "Valor COFINS",
+   "read_only": 1
+  }
+ ],
+ "modified": "2026-09-20 01:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "ERPZ Fiscal",
+ "name": "Item Importacao NFe Compra",
+ "owner": "Administrator",
+ "permissions": []
+}

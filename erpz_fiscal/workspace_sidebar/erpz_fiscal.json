@@ -56,6 +56,42 @@
   {
    "child": 1,
    "collapsible": 1,
+   "icon": "download",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Importa\u00e7\u00e3o de Compra (XML)",
+   "link_to": "Importacao NFe Compra",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "icon": "inbox",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Manifesta\u00e7\u00e3o do Destinat\u00e1rio (MDe)",
+   "link_to": "Manifestacao Destinatario NFe",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "icon": "shuffle",
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Mapeamento Item Fornecedor",
+   "link_to": "Mapeamento Item Fornecedor",
+   "link_type": "DocType",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
    "icon": "settings",
    "indent": 0,
    "keep_closed": 0,
@@ -125,7 +161,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-09-19 21:29:01.778580",
+ "modified": "2026-09-19 22:09:43.040960",
  "modified_by": "Administrator",
  "module": "ERPZ Fiscal",
  "name": "ERPZ Fiscal",
