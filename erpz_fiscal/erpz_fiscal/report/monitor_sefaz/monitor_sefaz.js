@@ -9,65 +9,68 @@ frappe.query_reports["Monitor SEFAZ"] = {
 
     get_datatable_options: function(options) {
         return Object.assign(options, {
-            cellHeight: 38,
-            inlineFilters: true
+            cellHeight: 34,
+            showTotalRow: true
         });
     },
 
     "onload": function(report) {
         frappe.dom.set_style(`
-            /* Tabela Profissional Formatada */
-            .report-wrapper .dt-scrollable {
-                border: 1px solid #cbd5e1 !important;
-                border-radius: 6px !important;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+            /* Tabela Padronizada Idêntica ao Contas a Receber */
+            .page-container[data-page-route="query-report"] .datatable,
+            .datatable {
+                border: 1px solid #d1d5db !important;
+                border-radius: 4px !important;
             }
-            .report-wrapper .dt-cell {
-                border-right: 1px solid #e2e8f0 !important;
-                border-bottom: 1px solid #e2e8f0 !important;
+            .datatable .dt-cell {
+                border-right: 1px solid #e5e7eb !important;
+                border-bottom: 1px solid #e5e7eb !important;
             }
-            .report-wrapper .dt-cell--header {
-                background-color: #f1f5f9 !important;
+            .datatable .dt-cell--header {
+                background-color: #f3f4f6 !important;
+                border-right: 1px solid #d1d5db !important;
                 border-bottom: 2px solid #cbd5e1 !important;
             }
-            .report-wrapper .dt-cell--header .dt-cell__content {
+            .datatable .dt-cell--header .dt-cell__content {
                 font-weight: 700 !important;
-                color: #0f172a !important;
+                color: #1f2937 !important;
                 font-size: 11px !important;
                 text-transform: uppercase !important;
-                letter-spacing: 0.4px !important;
+                letter-spacing: 0.3px !important;
             }
-            .report-wrapper .dt-row:nth-child(even) .dt-cell {
-                background-color: #f8fafc !important;
+            .datatable .dt-row:nth-child(even) .dt-cell {
+                background-color: #f9fafb !important;
             }
-            .report-wrapper .dt-row:hover .dt-cell {
-                background-color: #f1f5f9 !important;
+            .datatable .dt-row:hover .dt-cell {
+                background-color: #f3f4f6 !important;
             }
-            .report-summary {
-                border-radius: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                padding: 12px !important;
-                margin-bottom: 16px !important;
-                background: #ffffff !important;
+            .datatable .dt-row.dt-row-total .dt-cell {
+                background-color: #f3f4f6 !important;
+                font-weight: bold !important;
+                border-top: 2px solid #cbd5e1 !important;
             }
         `);
     },
 
     "formatter": function(value, row, column, data, default_formatter) {
         value = default_formatter(value, row, column, data);
+        if (!data) return value;
+
         if (column.fieldname === "codigo_status_sefaz") {
             if (data.codigo_status_sefaz === "100" || data.status === "Autorizado") {
-                value = `<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700; border:1px solid #86efac; padding:3px 8px; border-radius:4px; font-size:11px;">100 &bull; Autorizada</span>`;
+                value = `<span class="indicator-pill green" style="font-weight:bold;">100 &bull; Autorizada</span>`;
             } else if (data.codigo_status_sefaz === "105") {
-                value = `<span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700; border:1px solid #fde68a; padding:3px 8px; border-radius:4px; font-size:11px;">105 &bull; Processando</span>`;
+                value = `<span class="indicator-pill orange" style="font-weight:bold;">105 &bull; Processando</span>`;
             } else if (data.codigo_status_sefaz === "101" || data.status === "Cancelado") {
-                value = `<span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700; border:1px solid #cbd5e1; padding:3px 8px; border-radius:4px; font-size:11px;">101 &bull; Cancelada</span>`;
+                value = `<span class="indicator-pill gray" style="font-weight:bold;">101 &bull; Cancelada</span>`;
             } else if (data.codigo_status_sefaz) {
-                value = `<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700; border:1px solid #fca5a5; padding:3px 8px; border-radius:4px; font-size:11px;">${data.codigo_status_sefaz} &bull; Rejeição</span>`;
+                value = `<span class="indicator-pill red" style="font-weight:bold;">${data.codigo_status_sefaz} &bull; Rejeição</span>`;
+            } else if (data.name) {
+                value = `<span class="indicator-pill gray">Pendente</span>`;
             }
         } else if (column.fieldname === "numero_nota") {
-            if (value) {
-                value = `<strong>${value}</strong>`;
+            if (value && data.name) {
+                value = `<b>${value}</b>`;
             }
         } else if (column.fieldname === "chave_acesso") {
             if (data.chave_acesso) {
