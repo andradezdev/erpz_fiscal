@@ -1,11 +1,11 @@
 $(document).on("toolbar_setup", function() {
     try {
-        if (!localStorage.getItem("erpz_desktop_cache_v2")) {
+        if (!localStorage.getItem("erpz_desktop_cache_v3")) {
             localStorage.removeItem("Administrator:desktop");
             if (window.frappe && frappe.session && frappe.session.user) {
                 localStorage.removeItem(frappe.session.user + ":desktop");
             }
-            localStorage.setItem("erpz_desktop_cache_v2", "1");
+            localStorage.setItem("erpz_desktop_cache_v3", "1");
             if (window.frappe && frappe.pages && frappe.pages["desktop"] && frappe.pages["desktop"].desktop_page) {
                 frappe.pages["desktop"].desktop_page.update();
             }
