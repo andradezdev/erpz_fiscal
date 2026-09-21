@@ -867,3 +867,41 @@ class DocumentoFiscalEletronico(Document):
         except Exception as e:
             frappe.log_error(f"Erro CC-e SEFAZ: {str(e)}")
             raise e
+
+@frappe.whitelist()
+def get_nfe_compra_referenciadas(empresa=None):
+    """Retorna lista de NF-e de Compra importadas para autocomplete e seleção de chave referenciada"""
+    filters = {}
+    if empresa:
+        filters["empresa"] = empresa
+
+    compras = frappe.get_all(
+        "Importacao NFe Compra",
+        filters=filters,
+        fields=["name", "chave_acesso", "numero_nota", "fornecedor_nome", "supplier", "data_emissao", "valor_total_nota", "empresa"],
+        order_by="data_emissao desc, creation desc",
+        limit=50
+    )
+
+    result = []
+    for c in compras:
+        if not c.chave_acesso or len(c.chave_acesso.strip()) != 44:
+            continue
+        forn = c.fornecedor_nome or c.supplier or "Fornecedor"
+        val = frappe.utils.fmt_money(c.valor_total_nota or 0, currency="BRL")
+        num = c.numero_nota or ""
+        dt = frappe.utils.format_date(c.data_emissao) if c.data_emissao else ""
+
+        label = f"NF {num} - {forn} ({val}) - {c.chave_acesso}"
+        result.append({
+            "label": label,
+            "value": c.chave_acesso,
+            "description": f"Fornecedor: {forn} | Emissão: {dt} | Total: {val}",
+            "numero_nota": num,
+            "fornecedor": forn,
+            "data_emissao": dt,
+            "valor": val,
+            "chave_acesso": c.chave_acesso,
+            "name": c.name
+        })
+    return result

@@ -1,11 +1,25 @@
 frappe.ui.form.on('Documento Fiscal Eletronico', {
     
+    onload: function(frm) {
+        frm.trigger('carregar_opcoes_nfe_referenciada');
+    },
+
     reter_csrf: function(frm) { frm.trigger('recalcular_totais_client'); },
     reter_irrf: function(frm) { frm.trigger('recalcular_totais_client'); },
     reter_inss: function(frm) { frm.trigger('recalcular_totais_client'); },
     destinatario_uf: function(frm) { frm.trigger('recalcular_totais_client'); },
     destinatario_consumidor_final: function(frm) { frm.trigger('recalcular_totais_client'); },
     destinatario_indicador_ie: function(frm) { frm.trigger('recalcular_totais_client'); },
+
+    finalidade_emissao: function(frm) {
+        frm.trigger('verificar_exigencia_nfe_referenciada');
+    },
+
+    verificar_exigencia_nfe_referenciada: function(frm) {
+        const fin = frm.doc.finalidade_emissao || '';
+        const exigida = fin.startsWith('4') || fin.startsWith('2'); // Devolução ou Complementar
+        frm.set_df_property('chave_nfe_referenciada', 'reqd', exigida ? 1 : 0);
+    },
 
     recalcular_totais_client: function(frm) {
         frm.call({
@@ -17,7 +31,132 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
         });
     },
 
+    carregar_opcoes_nfe_referenciada: function(frm) {
+        frappe.call({
+            method: 'erpz_fiscal.erpz_fiscal.doctype.documento_fiscal_eletronico.documento_fiscal_eletronico.get_nfe_compra_referenciadas',
+            args: { empresa: frm.doc.empresa },
+            callback: function(r) {
+                if (r.message && Array.isArray(r.message)) {
+                    frm._nfe_compra_cache = r.message;
+                    // Define as opções para o campo Autocomplete
+                    frm.set_df_property('chave_nfe_referenciada', 'options', r.message);
+                    frm.trigger('render_nfe_referenciada_helper');
+                }
+            }
+        });
+    },
+
+    render_nfe_referenciada_helper: function(frm) {
+        if (!frm.fields_dict.chave_nfe_referenciada) return;
+        const $wrapper = frm.fields_dict.chave_nfe_referenciada.$wrapper;
+        $wrapper.find('.nfe-ref-helper-area').remove();
+
+        const $helper = $(`
+            <div class="nfe-ref-helper-area mt-1 d-flex align-items-center justify-content-between" style="font-size: 12px;">
+                <span class="text-muted">
+                    <i class="octicon octicon-info mr-1"></i> Digite para buscar ou selecione na lista suspensa.
+                </span>
+                <button type="button" class="btn btn-xs btn-default btn-abrir-modal-nfe-compra" style="font-weight: 600; cursor: pointer;">
+                    <i class="octicon octicon-search mr-1"></i> Selecionar de NF-e Importada de Compra
+                </button>
+            </div>
+        `);
+
+        $helper.find('.btn-abrir-modal-nfe-compra').on('click', function(e) {
+            e.preventDefault();
+            frm.trigger('abrir_dialog_selecao_nfe_compra');
+        });
+
+        $wrapper.append($helper);
+    },
+
+    abrir_dialog_selecao_nfe_compra: function(frm) {
+        const itens = frm._nfe_compra_cache || [];
+        if (!itens.length) {
+            frappe.msgprint(__('Nenhuma NF-e de Compra com chave válida foi encontrada no sistema. Faça a importação prévia do XML na tela de Importação de NF-e de Compra.'));
+            return;
+        }
+
+        let linhasHtml = '';
+        itens.forEach(it => {
+            linhasHtml += `
+                <tr style="cursor: pointer;" class="linha-nfe-compra" data-chave="${it.chave_acesso}">
+                    <td class="font-weight-bold text-center">NF ${it.numero_nota || '-'}</td>
+                    <td><b>${it.fornecedor}</b></td>
+                    <td class="text-center">${it.data_emissao || '-'}</td>
+                    <td class="text-right font-weight-bold text-success">${it.valor}</td>
+                    <td><code style="font-size: 11px;">${it.chave_acesso}</code></td>
+                    <td class="text-center">
+                        <button class="btn btn-xs btn-primary btn-selecionar-esta-chave" data-chave="${it.chave_acesso}">
+                            Selecionar
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        const dialog = new frappe.ui.Dialog({
+            title: __('Selecionar NF-e de Compra Importada para Referência'),
+            size: 'large',
+            fields: [
+                {
+                    fieldtype: 'Data',
+                    fieldname: 'busca',
+                    label: __('Filtrar por Fornecedor, Número da Nota ou Chave'),
+                    onchange: function() {
+                        const val = (dialog.get_value('busca') || '').toLowerCase().trim();
+                        dialog.$wrapper.find('.linha-nfe-compra').each(function() {
+                            const text = $(this).text().toLowerCase();
+                            $(this).toggle(text.includes(val));
+                        });
+                    }
+                },
+                {
+                    fieldtype: 'HTML',
+                    fieldname: 'tabela_html',
+                    options: `
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-bordered table-hover mb-0" style="font-size: 12px;">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width: 12%; text-align: center;">Nota</th>
+                                        <th style="width: 30%;">Fornecedor</th>
+                                        <th style="width: 14%; text-align: center;">Emissão</th>
+                                        <th style="width: 14%; text-align: right;">Total</th>
+                                        <th style="width: 20%;">Chave de Acesso</th>
+                                        <th style="width: 10%; text-align: center;">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${linhasHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    `
+                }
+            ]
+        });
+
+        dialog.show();
+
+        dialog.$wrapper.find('.btn-selecionar-esta-chave, .linha-nfe-compra').on('click', function(e) {
+            e.stopPropagation();
+            const chave = $(this).data('chave') || $(this).closest('tr').data('chave');
+            if (chave) {
+                frm.set_value('chave_nfe_referenciada', chave);
+                dialog.hide();
+                frappe.show_alert({
+                    message: __('Chave da NF-e vinculada com sucesso!'),
+                    indicator: 'green'
+                });
+            }
+        });
+    },
+
     refresh: function(frm) {
+        frm.trigger('verificar_exigencia_nfe_referenciada');
+        frm.trigger('carregar_opcoes_nfe_referenciada');
+
         const is_nfce = (frm.doc.modelo_fiscal || "").includes("65");
 
         if (!frm.is_new() && frm.doc.status === 'Rejeitado') {

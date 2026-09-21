@@ -411,9 +411,10 @@
   },
   {
    "fieldname": "chave_nfe_referenciada",
-   "fieldtype": "Data",
+   "fieldtype": "Autocomplete",
    "label": "Chave da NF-e Referenciada (Devolução / Complementar)",
-   "description": "Chave de 44 dígitos da nota de origem referenciada na tag <NFref>"
+   "description": "Selecione uma NF-e de Compra importada na lista ou informe a chave de 44 dígitos (<NFref>)",
+   "ignore_validation": 1
   },
   {
    "fieldname": "natureza_operacao",
