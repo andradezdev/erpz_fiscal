@@ -42,6 +42,43 @@ function ensure_desktop_layout_sync() {
                         frappe.pages["desktop"].desktop_page.data = null;
                         frappe.pages["desktop"].desktop_page.update();
                     }
+
+                const hasCargoNext = layout.some(i => (i.label === "CargoNext" || i.name === "CargoNext"));
+                if (!hasCargoNext) {
+                    console.log("[ERPZ] Atualizando layout do Desk em localStorage para incluir CargoNext...");
+                    const cargoNextItem = {
+                        label: "CargoNext",
+                        bg_color: "blue",
+                        link: null,
+                        link_type: "Workspace Sidebar",
+                        app: "logistics",
+                        icon_type: "Link",
+                        parent_icon: "",
+                        icon: "package",
+                        link_to: "CargoNext",
+                        idx: 13,
+                        standard: 1,
+                        logo_url: null,
+                        hidden: 0,
+                        name: "CargoNext",
+                        restrict_removal: 0,
+                        icon_image: null
+                    };
+                    const idxF = layout.findIndex(i => (i.label === "ERPZ Financeiro" || i.name === "ERPZ Financeiro"));
+                    if (idxF !== -1) {
+                        layout.splice(idxF + 1, 0, cargoNextItem);
+                    } else {
+                        layout.push(cargoNextItem);
+                    }
+                    localStorage.setItem(key, JSON.stringify(layout));
+                    if (window.frappe && frappe.desktop_icons && Array.isArray(frappe.desktop_icons)) {
+                        frappe.desktop_icons = layout;
+                    }
+                    if (window.frappe && frappe.pages && frappe.pages["desktop"] && frappe.pages["desktop"].desktop_page) {
+                        frappe.pages["desktop"].desktop_page.data = null;
+                        frappe.pages["desktop"].desktop_page.update();
+                    }
+                }
                 }
             }
         }
