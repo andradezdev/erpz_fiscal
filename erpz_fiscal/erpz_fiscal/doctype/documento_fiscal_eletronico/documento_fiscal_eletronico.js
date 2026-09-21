@@ -18,6 +18,8 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
     },
 
     refresh: function(frm) {
+        const is_nfce = (frm.doc.modelo_fiscal || "").includes("65");
+
         if (!frm.is_new() && frm.doc.status === 'Rejeitado') {
             let cod = frm.doc.codigo_status_sefaz || '';
             let mot = frm.doc.motivo_rejeicao || frm.doc.mensagem_sefaz || __('Documento fiscal rejeitado pela SEFAZ');
@@ -28,8 +30,8 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
             `);
             frm.dashboard.add_indicator(__('Rejeitado na SEFAZ ({0})', [cod]), 'red');
         }
+
         if (!frm.is_new() && frm.doc.status === 'Autorizado') {
-            let is_nfce = (frm.doc.modelo_fiscal || "").includes("65");
             let btn_label = is_nfce ? __('Imprimir Cupom NFC-e (80mm)') : __('Imprimir DANFE (PDF)');
 
             frm.add_custom_button(btn_label, function() {
@@ -37,9 +39,10 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
             }).addClass('btn-primary');
         }
 
-        
         if (!frm.is_new() && frm.doc.status === 'Autorizado') {
-            frm.add_custom_button(__('Cancelar NF-e na SEFAZ'), function() {
+            let cancel_label = is_nfce ? __('Cancelar NFC-e na SEFAZ') : __('Cancelar NF-e na SEFAZ');
+
+            frm.add_custom_button(cancel_label, function() {
                 frappe.prompt(
                     {
                         fieldname: 'justificativa',
@@ -53,8 +56,10 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
                             method: 'cancelar_documento_sefaz',
                             doc: frm.doc,
                             args: { justificativa: values.justificativa },
-                            callback: function(r) {
+                            always: function() {
                                 frappe.dom.unfreeze();
+                            },
+                            callback: function(r) {
                                 frm.reload_doc();
                                 if (r.message && r.message.success) {
                                     frappe.msgprint({
@@ -66,43 +71,48 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
                             }
                         });
                     },
-                    __('Cancelar Documento Fiscal na SEFAZ'),
+                    cancel_label,
                     __('Confirmar Cancelamento')
                 );
             }, __('Ações SEFAZ'));
 
-            frm.add_custom_button(__('Carta de Correção (CC-e)'), function() {
-                frappe.prompt(
-                    {
-                        fieldname: 'texto_correcao',
-                        fieldtype: 'Small Text',
-                        label: __('Texto da Correção (15 a 1000 caracteres)'),
-                        description: __('A CC-e não pode alterar valores, alíquotas, impostos, data de emissão ou dados do destinatário.'),
-                        reqd: 1
-                    },
-                    function(values) {
-                        frappe.dom.freeze(__('Transmitindo Carta de Correção para a SEFAZ...'));
-                        frm.call({
-                            method: 'emitir_cce_sefaz',
-                            doc: frm.doc,
-                            args: { texto_correcao: values.texto_correcao },
-                            callback: function(r) {
-                                frappe.dom.unfreeze();
-                                frm.reload_doc();
-                                if (r.message && r.message.success) {
-                                    frappe.msgprint({
-                                        title: __('Carta de Correção Homologada'),
-                                        indicator: 'green',
-                                        message: `<b>Status:</b> ${r.message.xMotivo}<br><b>Sequencial:</b> ${r.message.sequencial}<br><b>Protocolo:</b> ${r.message.protocolo}`
-                                    });
+            // Carta de Correção é EXCLUSIVA de NF-e (Modelo 55), vedada para NFC-e (Modelo 65)
+            if (!is_nfce) {
+                frm.add_custom_button(__('Carta de Correção (CC-e)'), function() {
+                    frappe.prompt(
+                        {
+                            fieldname: 'texto_correcao',
+                            fieldtype: 'Small Text',
+                            label: __('Texto da Correção (15 a 1000 caracteres)'),
+                            description: __('A CC-e não pode alterar valores, alíquotas, impostos, data de emissão ou dados do destinatário.'),
+                            reqd: 1
+                        },
+                        function(values) {
+                            frappe.dom.freeze(__('Transmitindo Carta de Correção para a SEFAZ...'));
+                            frm.call({
+                                method: 'emitir_cce_sefaz',
+                                doc: frm.doc,
+                                args: { texto_correcao: values.texto_correcao },
+                                always: function() {
+                                    frappe.dom.unfreeze();
+                                },
+                                callback: function(r) {
+                                    frm.reload_doc();
+                                    if (r.message && r.message.success) {
+                                        frappe.msgprint({
+                                            title: __('Carta de Correção Homologada'),
+                                            indicator: 'green',
+                                            message: `<b>Status:</b> ${r.message.xMotivo}<br><b>Sequencial:</b> ${r.message.sequencial}<br><b>Protocolo:</b> ${r.message.protocolo}`
+                                        });
+                                    }
                                 }
-                            }
-                        });
-                    },
-                    __('Emitir Carta de Correção Eletrônica (CC-e)'),
-                    __('Transmitir CC-e')
-                );
-            }, __('Ações SEFAZ'));
+                            });
+                        },
+                        __('Emitir Carta de Correção Eletrônica (CC-e)'),
+                        __('Transmitir CC-e')
+                    );
+                }, __('Ações SEFAZ'));
+            }
         }
 
         if (!frm.is_new() && frm.doc.chave_acesso) {
@@ -111,8 +121,10 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
                 frappe.call({
                     method: 'erpz_fiscal.api.nfe.consultar_documento_sefaz',
                     args: { documento_fiscal: frm.doc.name },
-                    callback: function(r) {
+                    always: function() {
                         frappe.dom.unfreeze();
+                    },
+                    callback: function(r) {
                         if (r.message) {
                             let m = r.message;
                             let ind = m.cStat === '100' ? 'green' : (m.cStat === '101' ? 'orange' : 'red');
@@ -139,7 +151,6 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
         }
 
         if (!frm.is_new() && frm.doc.status !== 'Autorizado' && frm.doc.status !== 'Cancelado') {
-            let is_nfce = (frm.doc.modelo_fiscal || "").includes("65");
             let emit_label = is_nfce ? __('Transmitir NFC-e para SEFAZ') : __('Transmitir NF-e para SEFAZ');
 
             frm.add_custom_button(emit_label, function() {
@@ -147,8 +158,10 @@ frappe.ui.form.on('Documento Fiscal Eletronico', {
                 frm.call({
                     method: 'transmitir_sefaz',
                     doc: frm.doc,
-                    callback: function(r) {
+                    always: function() {
                         frappe.dom.unfreeze();
+                    },
+                    callback: function(r) {
                         frm.reload_doc();
                         if (r.message && r.message.success) {
                             frappe.show_alert({

@@ -707,59 +707,59 @@ class DocumentoFiscalEletronico(Document):
             frappe.throw(_("A justificativa de cancelamento deve conter no mínimo 15 caracteres conforme exigência legal da SEFAZ."))
 
         from erpz_fiscal.api.nfe import get_sefaz_client
-        from erpz_fiscal.services.signer import SignerA1
-        import datetime
+        from erpbrasil.edoc.nfe import NFe
+        from erpbrasil.nfelib_legacy.v4_00 import retEnvEvento, retEnvEventoCancNFe
         from lxml import etree
+        import re
 
-        nfe_client, amb_label, cert_doc = get_sefaz_client(self.empresa)
-        file_doc = frappe.get_doc("File", {"file_url": cert_doc.arquivo_pfx})
-        pwd = cert_doc.get_password("senha_certificado") or cert_doc.senha_certificado
+        nfe_client_55, amb_label, cert_doc = get_sefaz_client(self.empresa)
+        trans = nfe_client_55._transmissao
 
-        dh_evento = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S-03:00")
-        id_evento = f"ID110111{self.chave_acesso}01"
-        cnpj_autor = cert_doc.cnpj_certificado or "18594769000140"
+        is_nfce = "65" in (self.modelo_fiscal or "")
+        mod = "65" if is_nfce else "55"
         tp_amb = "1" if "Produção" in amb_label else "2"
 
-        evento_xml = f"""<evento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-  <infEvento Id="{id_evento}">
-    <cOrgao>35</cOrgao>
-    <tpAmb>{tp_amb}</tpAmb>
-    <CNPJ>{cnpj_autor}</CNPJ>
-    <chNFe>{self.chave_acesso}</chNFe>
-    <dhEvento>{dh_evento}</dhEvento>
-    <tpEvento>110111</tpEvento>
-    <nSeqEvento>1</nSeqEvento>
-    <verEvento>1.00</verEvento>
-    <detEvento versao="1.00">
-      <descEvento>Cancelamento</descEvento>
-      <nProt>{self.protocolo or '135260000000001'}</nProt>
-      <xJust>{justificativa.strip()}</xJust>
-    </detEvento>
-  </infEvento>
-</evento>"""
+        client = NFe(transmissao=trans, uf=35, ambiente=tp_amb, mod=mod)
 
-        signer = SignerA1(file_doc.get_content(), pwd)
-        signed_evento = signer.sign_xml(evento_xml, reference_uri=id_evento)
+        # Formatar protocolo com estritamente 15 digitos numericos para atender o Schema TProt da SEFAZ
+        raw_prot = re.sub(r'\D', '', str(self.protocolo or '135260000000001'))
+        if len(raw_prot) < 15:
+            raw_prot = raw_prot.ljust(15, '0')
+        elif len(raw_prot) > 15:
+            raw_prot = raw_prot[:15]
 
-        env_evento_lote = f"""<?xml version="1.0" encoding="UTF-8"?>
-<envEvento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-  <idLote>1</idLote>
-  {signed_evento}
-</envEvento>"""
+        raiz = client.cancela_documento(
+            chave=self.chave_acesso,
+            protocolo_autorizacao=raw_prot,
+            justificativa=justificativa.strip()
+        )
 
-        endpoint = "https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl" if tp_amb == "2" else "https://nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl"
-        trans = nfe_client._transmissao
+        raiz_lote = retEnvEvento.TEnvEvento(versao="1.00", idLote="1")
+        raiz_lote.original_tagname_ = "envEvento"
+        xml_envio_string, xml_envio_etree = client._generateds_to_string_etree(raiz_lote)
+
+        evento = retEnvEventoCancNFe.TEvento(versao="1.00", infEvento=raiz)
+        evento.original_tagname_ = "evento"
+        xml_assinado = client.assina_raiz(evento, evento.infEvento.Id)
+        xml_envio_etree.append(etree.fromstring(xml_assinado))
+
+        if is_nfce:
+            endpoint = "https://homologacao.nfce.fazenda.sp.gov.br/ws/NFeRecepcaoEvento4.asmx?wsdl" if tp_amb == "2" else "https://nfce.fazenda.sp.gov.br/ws/NFeRecepcaoEvento4.asmx?wsdl"
+            op_name = "nfeRecepcaoEventoNF"
+        else:
+            endpoint = "https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl" if tp_amb == "2" else "https://nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl"
+            op_name = "nfeRecepcaoEvento"
 
         try:
             with trans.cliente(endpoint):
-                etree_doc = etree.fromstring(env_evento_lote.encode("utf-8"))
-                res = trans.enviar("nfeRecepcaoEvento", etree_doc)
+                res = trans.enviar(op_name, xml_envio_etree)
                 xml_res = res.text if hasattr(res, "text") else str(res)
 
                 ret_root = etree.fromstring(xml_res.encode("utf-8") if isinstance(xml_res, str) else xml_res)
                 ns = {"nfe": "http://www.portalfiscal.inf.br/nfe"}
 
-                infEvento = ret_root.find(".//nfe:retEvento/nfe:infEvento", ns) or ret_root.find(".//infEvento")
+                elem_ev = ret_root.find(".//nfe:retEvento/nfe:infEvento", ns)
+                infEvento = elem_ev if elem_ev is not None else ret_root.find(".//infEvento")
                 if infEvento is not None:
                     cstat = infEvento.findtext("nfe:cStat", namespaces=ns) or infEvento.findtext("cStat")
                     xmotivo = infEvento.findtext("nfe:xMotivo", namespaces=ns) or infEvento.findtext("xMotivo")
@@ -781,7 +781,13 @@ class DocumentoFiscalEletronico(Document):
                     else:
                         frappe.throw(_("SEFAZ Rejeitou o Cancelamento ({0}): {1}").format(cstat, xmotivo))
                 else:
-                    frappe.throw(_("Retorno inesperado da SEFAZ ao cancelar: {0}").format(xml_res[:300]))
+                    cstat_lote = ret_root.findtext(".//nfe:cStat", namespaces=ns) or ret_root.findtext(".//cStat") or ""
+                    xmotivo_lote = ret_root.findtext(".//nfe:xMotivo", namespaces=ns) or ret_root.findtext(".//xMotivo") or ""
+                    if cstat_lote:
+                        frappe.throw(_("SEFAZ Rejeitou o Envio do Lote ({0}): {1}").format(cstat_lote, xmotivo_lote))
+                    else:
+                        clean_text = re.sub(r'<[^>]+>', ' ', xml_res)[:300].strip()
+                        frappe.throw(_("Retorno inesperado da SEFAZ ao cancelar: {0}").format(clean_text or "Sem resposta válida"))
         except Exception as e:
             frappe.log_error(f"Erro cancelamento SEFAZ: {str(e)}")
             raise e
@@ -789,6 +795,9 @@ class DocumentoFiscalEletronico(Document):
     @frappe.whitelist()
     def emitir_cce_sefaz(self, texto_correcao):
         """Emite Carta de Correção Eletrônica (CC-e) na SEFAZ (Evento 110110)"""
+        if "65" in (self.modelo_fiscal or ""):
+            frappe.throw(_("A legislação da SEFAZ não permite Carta de Correção (CC-e) para NFC-e (Modelo 65). Em caso de erro, a NFC-e deve ser cancelada ou reemitida."))
+
         if self.status != "Autorizado":
             frappe.throw(_("Apenas documentos fiscais autorizados podem receber Carta de Correção."))
 
@@ -799,62 +808,45 @@ class DocumentoFiscalEletronico(Document):
             frappe.throw(_("O texto da correção não pode exceder 1000 caracteres."))
 
         from erpz_fiscal.api.nfe import get_sefaz_client
-        from erpz_fiscal.services.signer import SignerA1
-        import datetime
+        from erpbrasil.edoc.nfe import NFe
+        from erpbrasil.nfelib_legacy.v4_00 import retEnvEvento, retEnvCCe
         from lxml import etree
+        import re
 
-        nfe_client, amb_label, cert_doc = get_sefaz_client(self.empresa)
-        file_doc = frappe.get_doc("File", {"file_url": cert_doc.arquivo_pfx})
-        pwd = cert_doc.get_password("senha_certificado") or cert_doc.senha_certificado
-
-        dh_evento = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S-03:00")
-        seq_evento = 1
-        id_evento = f"ID110110{self.chave_acesso}{str(seq_evento).zfill(2)}"
-        cnpj_autor = cert_doc.cnpj_certificado or "18594769000140"
+        nfe_client_55, amb_label, cert_doc = get_sefaz_client(self.empresa)
+        trans = nfe_client_55._transmissao
         tp_amb = "1" if "Produção" in amb_label else "2"
 
-        x_cond_uso = "A Carta de Correcao e disciplinada pelo paragrafo 1o-A do art. 7o do Convenio S/N, de 15 de dezembro de 1970 e pode ser utilizada para regularizacao de erro ocorrido na emissao de documento fiscal, desde que o erro nao esteja relacionado com: I - as variaveis que determinam o valor do imposto tais como: base de calculo, aliquota, diferenca de preco, quantidade, valor da operacao ou da prestacao; II - a correcao de dados cadastrais que implique mudanca do remetente ou do destinatario; III - a data de emissao ou de saida."
+        client = NFe(transmissao=trans, uf=35, ambiente=tp_amb, mod="55")
 
-        evento_xml = f"""<evento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-  <infEvento Id="{id_evento}">
-    <cOrgao>35</cOrgao>
-    <tpAmb>{tp_amb}</tpAmb>
-    <CNPJ>{cnpj_autor}</CNPJ>
-    <chNFe>{self.chave_acesso}</chNFe>
-    <dhEvento>{dh_evento}</dhEvento>
-    <tpEvento>110110</tpEvento>
-    <nSeqEvento>{seq_evento}</nSeqEvento>
-    <verEvento>1.00</verEvento>
-    <detEvento versao="1.00">
-      <descEvento>Carta de Correcao</descEvento>
-      <xCorrecao>{texto_correcao.strip()}</xCorrecao>
-      <xCondUso>{x_cond_uso}</xCondUso>
-    </detEvento>
-  </infEvento>
-</evento>"""
+        seq_evento = 1
+        raiz = client.carta_correcao(
+            chave=self.chave_acesso,
+            sequencia=str(seq_evento),
+            justificativa=texto_correcao.strip()
+        )
 
-        signer = SignerA1(file_doc.get_content(), pwd)
-        signed_evento = signer.sign_xml(evento_xml, reference_uri=id_evento)
+        raiz_lote = retEnvEvento.TEnvEvento(versao="1.00", idLote="1")
+        raiz_lote.original_tagname_ = "envEvento"
+        xml_envio_string, xml_envio_etree = client._generateds_to_string_etree(raiz_lote)
 
-        env_evento_lote = f"""<?xml version="1.0" encoding="UTF-8"?>
-<envEvento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00">
-  <idLote>1</idLote>
-  {signed_evento}
-</envEvento>"""
+        evento = retEnvCCe.TEvento(versao="1.00", infEvento=raiz)
+        evento.original_tagname_ = "evento"
+        xml_assinado = client.assina_raiz(evento, evento.infEvento.Id)
+        xml_envio_etree.append(etree.fromstring(xml_assinado))
 
         endpoint = "https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl" if tp_amb == "2" else "https://nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx?wsdl"
-        trans = nfe_client._transmissao
 
         try:
             with trans.cliente(endpoint):
-                etree_doc = etree.fromstring(env_evento_lote.encode("utf-8"))
-                res = trans.enviar("nfeRecepcaoEvento", etree_doc)
+                res = trans.enviar("nfeRecepcaoEvento", xml_envio_etree)
                 xml_res = res.text if hasattr(res, "text") else str(res)
 
                 ret_root = etree.fromstring(xml_res.encode("utf-8") if isinstance(xml_res, str) else xml_res)
                 ns = {"nfe": "http://www.portalfiscal.inf.br/nfe"}
 
-                infEvento = ret_root.find(".//nfe:retEvento/nfe:infEvento", ns) or ret_root.find(".//infEvento")
+                elem_ev = ret_root.find(".//nfe:retEvento/nfe:infEvento", ns)
+                infEvento = elem_ev if elem_ev is not None else ret_root.find(".//infEvento")
                 if infEvento is not None:
                     cstat = infEvento.findtext("nfe:cStat", namespaces=ns) or infEvento.findtext("cStat")
                     xmotivo = infEvento.findtext("nfe:xMotivo", namespaces=ns) or infEvento.findtext("xMotivo")
@@ -865,7 +857,13 @@ class DocumentoFiscalEletronico(Document):
                     else:
                         frappe.throw(_("SEFAZ Rejeitou a Carta de Correção ({0}): {1}").format(cstat, xmotivo))
                 else:
-                    frappe.throw(_("Retorno inesperado da SEFAZ na CC-e: {0}").format(xml_res[:300]))
+                    cstat_lote = ret_root.findtext(".//nfe:cStat", namespaces=ns) or ret_root.findtext(".//cStat") or ""
+                    xmotivo_lote = ret_root.findtext(".//nfe:xMotivo", namespaces=ns) or ret_root.findtext(".//xMotivo") or ""
+                    if cstat_lote:
+                        frappe.throw(_("SEFAZ Rejeitou o Envio da CC-e ({0}): {1}").format(cstat_lote, xmotivo_lote))
+                    else:
+                        clean_text = re.sub(r'<[^>]+>', ' ', xml_res)[:300].strip()
+                        frappe.throw(_("Retorno inesperado da SEFAZ na CC-e: {0}").format(clean_text or "Sem resposta válida"))
         except Exception as e:
             frappe.log_error(f"Erro CC-e SEFAZ: {str(e)}")
             raise e
