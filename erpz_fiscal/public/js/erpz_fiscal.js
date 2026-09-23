@@ -79,6 +79,38 @@ function ensure_desktop_layout_sync() {
                         frappe.pages["desktop"].desktop_page.update();
                     }
                 }
+
+                const hasEd = layout.some(i => (i.label === "ERPZ Educacional" || i.name === "ERPZ Educacional"));
+                if (!hasEd) {
+                    console.log("[ERPZ] Atualizando layout do Desk em localStorage para incluir ERPZ Educacional...");
+                    const edItem = {
+                        label: "ERPZ Educacional",
+                        bg_color: "blue",
+                        link: null,
+                        link_type: "Workspace Sidebar",
+                        app: "ifitwala_ed",
+                        icon_type: "Link",
+                        parent_icon: "",
+                        icon: "education",
+                        link_to: "ERPZ Educacional",
+                        idx: 14,
+                        standard: 1,
+                        logo_url: null,
+                        hidden: 0,
+                        name: "ERPZ Educacional",
+                        restrict_removal: 0,
+                        icon_image: null
+                    };
+                    layout.push(edItem);
+                    localStorage.setItem(key, JSON.stringify(layout));
+                    if (window.frappe && frappe.desktop_icons && Array.isArray(frappe.desktop_icons)) {
+                        frappe.desktop_icons = layout;
+                    }
+                    if (window.frappe && frappe.pages && frappe.pages["desktop"] && frappe.pages["desktop"].desktop_page) {
+                        frappe.pages["desktop"].desktop_page.data = null;
+                        frappe.pages["desktop"].desktop_page.update();
+                    }
+                }
                 }
             }
         }
